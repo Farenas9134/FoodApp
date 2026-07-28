@@ -1,0 +1,6 @@
+Video I watched for blueprint structure. 
+Helpful for refresher / guide
+
+TLDR: blueprints allow you to work on seperate projects (w/ diff routes) regarding the backend without it all being on main.py
+
+https://www.youtube.com/watch?v=_LMiUOYDxzE
