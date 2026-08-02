@@ -3,6 +3,7 @@ Where we define tables with corresponding fields
 '''
 
 from . import db
+from flask_login import UserMixin
 
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -11,7 +12,7 @@ class Book(db.Model):
     year = db.Column(db.Integer)
     rating = db.Column(db.Float)
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(1000), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
