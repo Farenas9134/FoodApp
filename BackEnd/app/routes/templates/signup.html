@@ -7,9 +7,31 @@
 
     <h2>Hello please sign up here!</h2>
 
-    <p>Insert Username <a href="/">here </a></p>
+    <div class="box">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="notification is-danger">
+                {{messages[0]}}. Go to <a href="{{ url_for('login.login') }}"> login page</a><div class=""></div>
+            </div>
+        {% endif %}
+        {% endwith %}
 
-    <p>Insert Password <a href="/"> here </a>.</p>
+        <form method="POST" action="/signup">
+            <div class="field">
+                <input class="input is-large" type="email" name="email" placeholder="Email" autofocus="">
+            </div>
+
+            <div class="field">
+                <input class="input is-large" type="text" name="name" placeholder="Name" autofocus="">
+            </div>
+
+            <div class="field">
+                <input class="input is-large" type="password" name="password" placeholder="Password">
+            </div>
+
+            <button class="button is-block is-info is-large is-fullwidth"> Sign Up</button>
+        </form>
+    </div>
 
 </body>
 </html>

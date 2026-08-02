@@ -15,14 +15,18 @@ def signup_post():
     name = request.form.get('name')
     password = request.form.get('password')
 
-    user = User.query.filter_by(email=email)
+    user = User.query.filter_by(email=email).first()
 
     if user:
         flash('An account with this email address already exists')
         return redirect(url_for('signup.signup'))
 
+    # create new user. Hash password so plaintext version never stored
     new_user = User(email=email, name=name, password=generate_password_hash(password))
+
+    # add user to db
     db.session.add(new_user)
     db.session.commit()
 
+    # insert proper login route when done
     return redirect(url_for('login.login'))

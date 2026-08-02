@@ -11,7 +11,7 @@ def create_app():
 
     # Configuration
     app.config['SECRET_KEY'] = 'super-secret-key'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///books.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
 
     # Initialize extensions with app
