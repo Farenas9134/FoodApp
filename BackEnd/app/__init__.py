@@ -35,4 +35,7 @@ def create_app():
     from .routes.signup import signup_db
     app.register_blueprint(signup_db)
 
+    from .routes.login import login_bp
+    app.register_blueprint(login_bp)
+
     return app
