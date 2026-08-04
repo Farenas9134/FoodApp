@@ -1,9 +1,11 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy 
 from flask_login import LoginManager
+from flask_migrate import Migrate
 
 # Initialize SQLAlchemy instance (outside create_app for import access)
 db = SQLAlchemy()
+migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
@@ -15,6 +17,7 @@ def create_app():
 
     # Initialize extensions with app
     db.init_app(app)
+    migrate.init_app(app, db)
 
     # Configure Flask-Login
     login_manager = LoginManager()
