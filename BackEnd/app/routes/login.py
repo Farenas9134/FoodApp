@@ -17,7 +17,7 @@ def login_post():
     # Check whether or not user wants to be remembered and not have to login again when reopening page
     remember = bool(request.form.get('remember'))
 
-    user = User.query.filter_by(user_email=email).first()
+    user = User.query.filter_by(email=email).first()
 
     # Checking if user exists
     if not user or not check_password_hash(user.password, password):
