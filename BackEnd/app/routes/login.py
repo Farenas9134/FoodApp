@@ -29,8 +29,8 @@ def login_post():
     login_user(user, remember=remember)
     return redirect(url_for('main.profile'))
 
-# @login_bp.route('/logout')
-# @login_required
-# def logout():
-#     logout_user()
-#     return redirect(url_for('main.home'))
+@login_bp.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('main.home'))
