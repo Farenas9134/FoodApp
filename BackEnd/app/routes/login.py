@@ -9,6 +9,9 @@ login_bp = Blueprint('login', __name__, template_folder='templates')
 def login():
     return render_template('login.html')
 
+'''
+Gets a user's username and password, queries the user database to determine whether the user has signed up; if yes, successful login follows
+'''
 @login_bp.route('/login', methods=['POST'])
 def login_post():
 
@@ -29,6 +32,9 @@ def login_post():
     login_user(user, remember=remember)
     return redirect(url_for('main.profile'))
 
+'''
+Logs out a user from their current session
+'''
 @login_bp.route('/logout')
 @login_required
 def logout():

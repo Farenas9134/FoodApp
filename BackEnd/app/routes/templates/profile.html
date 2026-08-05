@@ -2,10 +2,10 @@
 <html>
 <head>
     <title>Food App Temporary Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css" />
 </head>
-<body>
-    <h1>Hello, {{name}}!</h1>
 
+<body>
     <div class="navbar-end">
         <a href="{{ url_for('main.home') }}" class="navbar-item">
             Home
@@ -29,6 +29,7 @@
         </a>
         {% endif %}
     </div>
-    
+
+    <h1>Hello, {{name}}!</h1>
 </body>
 </html>

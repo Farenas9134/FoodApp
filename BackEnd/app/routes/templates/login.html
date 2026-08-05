@@ -2,8 +2,33 @@
 <html>
 <head>
     <title>Food App Temporary LogIn</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css" />
 </head>
+
 <body>
+    <div class="navbar-end">
+        <a href="{{ url_for('main.home') }}" class="navbar-item">
+            Home
+        </a>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('main.profile') }}" class="navbar-item">
+            Profile
+        </a>
+        {% endif %}
+        {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('login.login') }}" class="navbar-item">
+            Login
+        </a>
+        <a href="{{ url_for('signup.signup') }}" class="navbar-item">
+            Sign Up
+        </a>
+        {% endif %}
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('login.logout') }}" class="navbar-item">
+            Logout
+        </a>
+        {% endif %}
+    </div>
 
     <h2>Hello please login here!</h2>
 
@@ -37,30 +62,6 @@
             </div>
             <button class="button">Login</button>
         </form>
-    </div>
-
-    <div class="navbar-end">
-        <a href="{{ url_for('main.home') }}" class="navbar-item">
-            Home
-        </a>
-        {% if current_user.is_authenticated %}
-        <a href="{{ url_for('main.profile') }}" class="navbar-item">
-            Profile
-        </a>
-        {% endif %}
-        {% if not current_user.is_authenticated %}
-        <a href="{{ url_for('login.login') }}" class="navbar-item">
-            Login
-        </a>
-        <a href="{{ url_for('signup.signup') }}" class="navbar-item">
-            Sign Up
-        </a>
-        {% endif %}
-        {% if current_user.is_authenticated %}
-        <a href="{{ url_for('login.logout') }}" class="navbar-item">
-            Logout
-        </a>
-        {% endif %}
     </div>
 
 </body>
