@@ -7,3 +7,7 @@ Requirements:
 1. Node.js
 2. Virtual Environment
 3. Run pip install -r requirements.txt
+
+Updating db:
+
+flask --app run.py db upgrade
