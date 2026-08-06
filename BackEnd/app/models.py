@@ -14,3 +14,16 @@ class User(UserMixin, db.Model):
     # Overrides default get_id() function, otherwise we get NotImplementedError()
     def get_id(self):
         return (self.user_id)
+
+# What should this schema look like?
+# class Recipe(db.Model):
+#     recipe_id = db.Column(db.Integer, primary_key=True)
+#     title = db.Column(db.String(100), nullable=False)
+#     source_url = db.Column(db.String(1000))
+#     source_platform = db.Column(db.String(100))
+#     ingredients = db.Column()
+#     steps = db.Column()
+#     image_url = 
+#     submitted_by = #foriegn key?
+#     created_at = 
+

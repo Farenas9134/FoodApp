@@ -1,25 +1,37 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask import Blueprint, request, jsonify
+from werkzeug.security import generate_password_hash
 from ..models import User
 from .. import db
 
-signup_db = Blueprint('signup', __name__, template_folder="templates")
+signup_db = Blueprint('signup', __name__)
 
-@signup_db.route("/signup")
-def signup():
-    return render_template('signup.html')
+# @signup_db.route("/signup")
+# def signup():
+#     return render_template('signup.html')
 
 @signup_db.route('/signup', methods=['POST'])
 def signup_post():
-    email = request.form.get('email')
-    name = request.form.get('name')
-    password = request.form.get('password')
+
+    data = request.get_json()
+
+    if not data: 
+        return jsonify({"error": "Missing JSON body"}), 400
+
+    email = data.get('email')
+    name = data.get('name')
+    password = data.get('password')
+
+    if not email or not password or not name:
+        return jsonify({
+            "error":"Missing required fields"
+        }), 400
 
     user = User.query.filter_by(email=email).first()
 
     if user:
-        flash('An account with this email address already exists')
-        return redirect(url_for('signup.signup'))
+        return jsonify({
+            "error": "Email attached to existing user."
+        }), 400
 
     # create new user. Hash password so plaintext version never stored
     new_user = User(email=email, name=name, password=generate_password_hash(password))
@@ -28,5 +40,15 @@ def signup_post():
     db.session.add(new_user)
     db.session.commit()
 
-    # insert proper login route when done
-    return redirect(url_for('login.login'))
+    # return successful json message
+    return jsonify({
+        "message":"User created successfully",
+        "user":{
+            "email": email,
+            "name": name
+        }
+    })
+
+@signup_db.route('/signup-test')
+def signup_test():
+    return 'Hahaha you have curl working!'

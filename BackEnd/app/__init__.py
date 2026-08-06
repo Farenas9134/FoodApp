@@ -3,12 +3,18 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
 
+# What is CORS? https://www.geeksforgeeks.org/python/how-to-install-flask-cors-in-python/
+from flask_cors import CORS
+
+
 # Initialize SQLAlchemy instance (outside create_app for import access)
 db = SQLAlchemy()
 migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
+    # update methods as neeeded,
+    CORS(app, supports_credentials=True, methods=["GET", "POST"])
 
     # Configuration
     app.config['SECRET_KEY'] = 'super-secret-key'
