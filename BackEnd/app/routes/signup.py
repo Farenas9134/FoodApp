@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash
 from ..models import User
-from .. import db
+from ..extensions import db
 
 signup_db = Blueprint('signup', __name__)
 

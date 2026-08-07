@@ -30,7 +30,16 @@ Invoke-RestMethod -Uri "http://127.0.0.1:5000/signup" `
     -ContentType "application/json" `
     -Body '{"email":"curl-test@gmail.com","name":"curl","password":"curl"}'
 
+--- Testing recipe submit
 Invoke-RestMethod -Uri "http://127.0.0.1:5000/recipes-submit" `
-    -Method POST `
-    -ContentType "application/json" `
-    -Body '{"title":"test","source_url":"test.com","source_platform":"test", "ingredients":"test egg", "instructions":"step test", "image_url":"test.jpg", "submitted_by":"test"}'
+     -Method POST `
+     -ContentType "application/json" `
+     -Body '{"title":"test","source_url":"test.com","source_platform":"test", "ingredients":"test egg", "instructions":"step test", "image_url":"test.jpg", "created_by":"Chef test"}'
+
+--- Testing recipe get
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/recipes" `
+    -Method GET
+
+--- Testing recipe get by id
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/recipes/1
+    -Method GET
