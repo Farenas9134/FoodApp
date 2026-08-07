@@ -17,9 +17,9 @@ def signup_post():
     if not data: 
         return jsonify({"error": "Missing JSON body"}), 400
 
-    email = data.get('email')
-    name = data.get('name')
-    password = data.get('password')
+    email = data["email"]
+    name = data["name"]
+    password = data["password"]
 
     if not email or not password or not name:
         return jsonify({
