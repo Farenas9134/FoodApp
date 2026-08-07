@@ -1,13 +1,10 @@
 from flask import Blueprint, request, jsonify
+from sqlalchemy import select
 from werkzeug.security import generate_password_hash
 from ..models import User
 from ..extensions import db
 
 signup_db = Blueprint('signup', __name__)
-
-# @signup_db.route("/signup")
-# def signup():
-#     return render_template('signup.html')
 
 @signup_db.route('/signup', methods=['POST'])
 def signup_post():
@@ -26,9 +23,10 @@ def signup_post():
             "error":"Missing required fields"
         }), 400
 
-    user = User.query.filter_by(email=email).first()
+    stmt = select(User).filter_by(email=email)
+    existing_user = db.session.scalars(stmt).first()
 
-    if user:
+    if existing_user:
         return jsonify({
             "error": "Email attached to existing user."
         }), 400
@@ -47,8 +45,4 @@ def signup_post():
             "email": email,
             "name": name
         }
-    })
-
-@signup_db.route('/signup-test')
-def signup_test():
-    return 'Hahaha you have curl working!'
+    }), 201
