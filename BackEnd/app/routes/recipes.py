@@ -24,7 +24,7 @@ def submit_recipe():
             missing.append(field)
 
     if missing:
-        return jsonify({"error": "Missing required fields", "missing": missing}), 400
+        return jsonify({"error": "Missing required fields", "missing": missing}), 401
 
     # Apparently modern 2.0 way to check for duplicate data
     stmt = select(Recipe).filter_by(title=data["title"], source_url=data["source_url"])
@@ -90,7 +90,7 @@ def search_recipes():
     query = request.args.get('q', '')
 
     if not query:
-         return jsonify({'recipes':[]})
+         return jsonify({'recipes':[]}), 200
 
     # Use LIKE for partial matching
     # The % wildcards match any characters before and after the search term
@@ -102,7 +102,7 @@ def search_recipes():
          )
     ).limit(20).all()
 
-    return jsonify({'recipes':[recipe.to_dict() for recipe in recipes]})
+    return jsonify({'recipes':[recipe.to_dict() for recipe in recipes]}), 200
 
 
 @recipes_db.route('/recipes/<int:recipe_id>', methods=['PUT'])
@@ -152,7 +152,7 @@ def delete_recipe(recipe_id):
      user_id = current_user.id if current_user.is_authenticated else 67
 
      if user_id != recipe.submitted_by:
-          return jsonify({'error': 'User did not submit this recipe. Cannot delete it.'})
+          return jsonify({'error': 'User did not submit this recipe. Cannot delete it.'}), 401
 
      try:
           db.session.delete(recipe)
