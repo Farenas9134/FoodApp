@@ -30,6 +30,13 @@ Invoke-RestMethod -Uri "http://127.0.0.1:5000/signup" `
     -ContentType "application/json" `
     -Body '{"email":"curl-test@gmail.com","name":"curl","password":"curl"}'
 
+-- Testing login (MUST SIGNUP FIRST)
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/login" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body '{"email":"curl-test@gmail.com", "password":"curl"}'
+    
+
 --- Testing recipe submit
 Invoke-RestMethod -Uri "http://127.0.0.1:5000/recipes-submit" `
      -Method POST `
