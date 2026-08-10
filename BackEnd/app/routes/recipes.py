@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from sqlalchemy import select
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from ..models import Recipe
 from ..extensions import db
@@ -87,22 +87,45 @@ def get_recipe_by_id(recipe_id):
 
 @recipes_db.route('/recipes/search', methods=['GET'])
 def search_recipes():
-    query = request.args.get('q', '')
+    '''
+        Lowkey inefficent but should work rn as db is small.
+    '''
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    query = request.args.to_dict(flat=False)
 
     if not query:
          return jsonify({'recipes':[]}), 200
 
-    # Use LIKE for partial matching
-    # The % wildcards match any characters before and after the search term
-    search_term = f'%{query}%'
+    # Only search by: title, source platform, ingredients, 
+    #                 tags, submitted by?, created by
+    valid_fields = set(Recipe.__table__.columns.keys()) - {'recipe_id', 'created_at', 'last_updated', 'instructions', 'image_url', 'created_at', 'last_updated'}
 
-    recipes = Recipe.query.filter(
-         db.or_(
-              Recipe.title.ilike(search_term), # Case-insensitive match
-         )
-    ).limit(20).all()
+    conditions = []
 
-    return jsonify({'recipes':[recipe.to_dict() for recipe in recipes]}), 200
+    for field, value in query.items():
+         if field in valid_fields:
+              # returns the entire column for that field
+              # Recipe.title -> entire column of titles
+              column = getattr(Recipe, field)
+              for val in value:
+                   if val.strip():
+                        # With that column, search for items
+                        conditions.append(column.ilike(f'%{val.strip()}%'))
+                # and_ -> merges all passed args into a single SQL WHERE clause joined by AND
+                # * -> unpacks items in list into seperate arguments
+    
+    pagination = Recipe.query.filter(db.and_(*conditions)).paginate(page=page, per_page=per_page, error_out=False)
+
+    return jsonify({
+             'recipes': [recipe.to_dict() for recipe in pagination.items],
+             'total': pagination.total,
+             'pages': pagination.pages,
+             'current_page': page,
+             'has_next': pagination.has_next,
+             'has_prec': pagination.has_prev
+    
+        }), 200
 
 
 @recipes_db.route('/recipes/<int:recipe_id>', methods=['PUT'])
@@ -160,3 +183,26 @@ def delete_recipe(recipe_id):
      except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+@recipes_db.route('/recipes/recent', methods=["GET"])
+def get_recent_recipes():
+    # Get pagination parameters from query string
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    # Recipes posted from the last 7 days
+    cutoff_date = datetime.now(timezone.utc) - timedelta(days=7)
+
+    pagination = Recipe.query.filter(
+         Recipe.created_at >= cutoff_date,
+    ).order_by(Recipe.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+
+    return jsonify({
+         'recipes': [recipe.to_dict() for recipe in pagination.items],
+         'total': pagination.total,
+         'pages': pagination.pages,
+         'current_page': page,
+         'has_next': pagination.has_next,
+         'has_prec': pagination.has_prev
+
+    }), 200
