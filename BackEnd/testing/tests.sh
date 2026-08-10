@@ -58,7 +58,7 @@ run_test() {
 
 # --- API TESTS ---
 
-# format -> run_test [expected status] [test type] [curl command args]
+# format -> run_test [expected status] [test description] [curl command args]
 
 # 1. GET all recipes
 run_test 200 "GET all recipes" "$URL/recipes"
@@ -127,9 +127,10 @@ run_test 200 "Update recipe you own" \
     -X PUT \
     -H "Content-Type: application/json" \
     -d '{
-        "title" : "Changed You!"
+        "title" : "Changed You!",
+        "tags" : "silly, testy, unreal"
     }' \
-    "$URL/recipes/2"
+    "$URL/recipes/20"
 
 run_test 403 "Update recipe you don't own" \
     -X PUT \
@@ -142,14 +143,14 @@ run_test 403 "Update recipe you don't own" \
 run_test 400 "PUT recipe title that conflicts with existing recipe" \
     -X PUT \
     -H "Content-Type: application/json" \
-    -d '{ "title": "Change Me!" }' \
-    "$URL/recipes/2"
+    -d '{ "title": "Christmas pie" }' \
+    "$URL/recipes/20"
 
 # 5. Delete Recipe
 run_test 200 "DELETE recipe you own" \
     -X DELETE \
     -H "Content-Type: application/json" \
-    "$URL/recipes/3"
+    "$URL/recipes/20"
 
 run_test 401 "DELETE recipe you don't own" \
     -X DELETE \

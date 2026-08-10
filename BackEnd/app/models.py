@@ -23,15 +23,17 @@ class Recipe(db.Model):
     
     recipe_id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    source_url = db.Column(db.String(1000))
-    source_platform = db.Column(db.String(100))
-    ingredients = db.Column(db.JSON, nullable=False)
-    instructions = db.Column(db.Text, nullable=False)
-    image_url = db.Column(db.String(1000))
+    source_url = db.Column(db.String(1000), nullable=False)
+    source_platform = db.Column(db.String(100), nullable=False)
+    ingredients = db.Column(db.JSON, nullable=False, default=list)
+    instructions = db.Column(db.JSON, nullable=False)
+    image_url = db.Column(db.String(1000), nullable=False, default=list)
+    tags = db.Column(db.String(100))
     submitted_by = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     # if we create an account for each 'influencer' we can have a table for them
-    created_by = db.Column(db.String(100))
+    created_by = db.Column(db.String(100), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    last_updated = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
         
     def to_dict(self):

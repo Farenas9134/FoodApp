@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from sqlalchemy import select
+from datetime import datetime, timezone
+
 from ..models import Recipe
 from ..extensions import db
 
@@ -36,16 +38,14 @@ def submit_recipe():
     # For testing purposes, aka when @login_required commented out
     user_id = current_user.id if current_user.is_authenticated else 67
 
-    new_recipe = Recipe(
-        title = data["title"], 
-        source_url = data["source_url"], 
-        source_platform = data["source_platform"],
-        ingredients = data["ingredients"],
-        instructions = data["instructions"],
-        image_url = data["image_url"],
-        submitted_by = user_id,
-        created_by = data["created_by"]
-    )
+    # Grab all attrs in Recipe relation, removing auto generated field submission
+    valid_fields = set(Recipe.__table__.columns.keys()) - {'recipe_id', 'created_at', 'last_updated'}
+
+    new_recipe = Recipe(submitted_by=user_id)
+
+    for field,value in data.items():
+         if field in valid_fields:
+              setattr(new_recipe, field, value)
 
     db.session.add(new_recipe)
     db.session.commit()
@@ -118,10 +118,7 @@ def update_recipe(recipe_id):
      if recipe.submitted_by != user_id:
           return jsonify({'error': 'User did not create recipe.'}), 403
 
-     mutable_recipe_fields = [
-             "title", "source_url", "source_platform",
-             "ingredients", "instructions", "image_url", "created_by"
-         ]
+     mutable_recipe_fields = set(Recipe.__table__.columns.keys()) - {'recipe_id', 'created_at', 'last_updated'}
      
      try:
         for field, value in data.items():
@@ -135,8 +132,9 @@ def update_recipe(recipe_id):
                         existing = db.session.scalars(stmt).first()
                         if existing:
                             return jsonify({'error':f'{field.replace("_"," ").title()} already taken'}), 400
-                        # Set field attribute to recipe
-                        setattr(recipe, field, value)
+                # Set field attribute to recipe
+                setattr(recipe, field, value)
+        setattr(recipe, 'last_updated', datetime.now(timezone.utc))
 
         db.session.commit()
         return jsonify({'Success': 'Successfully changed the recipe!', 'recipe': recipe.to_dict()}), 200
@@ -158,7 +156,7 @@ def delete_recipe(recipe_id):
           db.session.delete(recipe)
           db.session.commit()
 
-          return jsonify({'message': 'Recipe deleted successfullt'}), 200
+          return jsonify({'message': 'Recipe deleted successfully'}), 200
      except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
