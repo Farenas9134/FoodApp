@@ -67,6 +67,9 @@ def login_post():
         return jsonify({
             "error":"Incorrect password, please try again"
         }), 400
+
+    # remember default true for testing
+    login_user(existing_user, remember=True)
     
     return jsonify({
         "message":"Successful login"

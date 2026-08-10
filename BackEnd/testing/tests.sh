@@ -60,6 +60,34 @@ run_test() {
 
 # format -> run_test [expected status] [test description] [curl command args]
 
+# ============= TESTING AUTHORIZATION ROUTES ================
+# 1. User Sign Up
+run_test 201 "POST sign up new user" \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d '{
+        "email": "bash-test@gmail.com",
+        "name": "Bash Tester",
+        "password": "bash"
+    }' \
+    "$URL/signup"
+
+# 2. User Log In
+run_test 201 "POST login with proper credentials" \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d '{
+        "email": "bash-test@gmail.com",
+        "password": "bash"
+    }' \
+    -c cookies.txt \
+    "$URL/login"
+
+# Quick manual curl command:
+# curl -X POST http://127.0.0.1:5000/login   -H "Content-Type: application/json"   -d '{"email":"bash-test@gmail.com", "password":"bash"}'   -c cookies.txt
+
+# ============= TESTING RECIPE ROUTES ================
+
 # 1. GET all recipes
 run_test 200 "GET all recipes" "$URL/recipes"
 

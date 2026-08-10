@@ -47,3 +47,10 @@ class Recipe(db.Model):
             data[column.name] = value
         return data
 
+class SavedRecipes(db.Model):
+    __tablename__ = 'SavedRecipes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.recipe_id'), nullable=False)
+    saved_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
