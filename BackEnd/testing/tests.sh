@@ -86,6 +86,8 @@ run_test 201 "POST login with proper credentials" \
 # Quick manual curl command:
 # curl -X POST http://127.0.0.1:5000/login   -H "Content-Type: application/json"   -d '{"email":"bash-test@gmail.com", "password":"bash"}'   -c cookies.txt
 
+# Then reuse cookies to send requests to login required routes
+# curl blah blah -b cookies.txt
 # ============= TESTING RECIPE ROUTES ================
 
 # 1. GET all recipes
