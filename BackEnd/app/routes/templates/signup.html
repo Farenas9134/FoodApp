@@ -19,7 +19,7 @@
             <a href="{{ url_for('login.login') }}" class="navbar-item">
                 Login
             </a>
-            <a href="{{ url_for('signup.signup') }}" class="navbar-item">
+            <a href="{{ url_for('signup.signup_post') }}" class="navbar-item">
                 Sign Up
             </a>
             {% endif %}
@@ -41,7 +41,7 @@
             {% endif %}
             {% endwith %}
 
-            <form method="POST" action="/signup">
+            <form method="POST" action="/signup_post">
                 <div class="field">
                     <input class="input is-large" type="email" name="email" placeholder="Email" autofocus="">
                 </div>
