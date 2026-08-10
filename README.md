@@ -10,6 +10,9 @@ Requirements:
 
 Updating db:
 
+Update the models in models.py
+flask db migrate -m "comments"
+
 flask --app run.py db upgrade
 
 ---
