@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user, logout_user
 from datetime import datetime, timezone, timedelta
 
 from ..models import Recipe, User, SavedRecipes
@@ -66,6 +66,31 @@ def delete_recipe(recipe_id):
         db.session.commit()
         return jsonify({'message': 'Recipe deleted successfully'}), 200
     
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@user_bp.route('/user', methods=['DELETE'])
+@login_required
+def delete_user_profile():
+    user_id = current_user.user_id
+
+    try:
+        # grab and delete attached saved recipes and submitted recipes
+        # .delete() bulk deletion
+        SavedRecipes.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+        Recipe.query.filter_by(submitted_by=user_id).delete(synchronize_session=False)
+        
+        # delete user
+        db.session.delete(current_user)
+        db.session.commit()
+
+        # Clear session / logout user
+        logout_user()
+
+        return jsonify({
+            'message': 'Successfully deleted user and attached recipes!'
+        }), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

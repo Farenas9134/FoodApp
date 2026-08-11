@@ -66,28 +66,68 @@ run_test 201 "POST sign up new user" \
     -X POST \
     -H "Content-Type: application/json" \
     -d '{
-        "email": "bash-test@gmail.com",
-        "name": "Bash Tester",
-        "password": "bash"
+        "email": "bash-test2@gmail.com",
+        "name": "Bash Tester2",
+        "password": "bash2"
     }' \
     "$URL/signup"
+
+run_test 400 "POST sign up with existing email" \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d '{
+        "email": "bash-test2@gmail.com",
+        "name": "Bash Tester2",
+        "password": "bash2"
+    }' \
+    "$URL/signup"
+
 
 # 2. User Log In
 run_test 201 "POST login with proper credentials" \
     -X POST \
     -H "Content-Type: application/json" \
     -d '{
-        "email": "bash-test@gmail.com",
-        "password": "bash"
+        "email": "bash-test2@gmail.com",
+        "password": "bash2"
     }' \
     -c cookies.txt \
     "$URL/login"
+
+# 3. Save recipes
+run_test 201 "POST save recipe" \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    "$URL/user/recipes/3"
+
+# 4. Delete recipes
+run_test 200 "DELETE saved recipe" \
+    -X DELETE \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    "$URL/user/recipes/3"
+
+run_test 404 "DELETE recipe you haven't saved" \
+    -X DELETE \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    "$URL/user/recipes/1"
+
+# 5. Delete user
+run_test 200 "DELETE user profile" \
+    -X DELETE \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    "$URL/user"
 
 # Quick manual curl command:
 # curl -X POST http://127.0.0.1:5000/login   -H "Content-Type: application/json"   -d '{"email":"bash-test@gmail.com", "password":"bash"}'   -c cookies.txt
 
 # Then reuse cookies to send requests to login required routes
 # curl blah blah -b cookies.txt
+
+
 # ============= TESTING RECIPE ROUTES ================
 
 # 1. GET all recipes
