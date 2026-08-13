@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user, logout_user
 from datetime import datetime, timezone, timedelta
+import sqlalchemy as sa
 
-from ..models import Recipe, User, SavedRecipes
+from ..models import Recipe, User, SavedRecipes, Relationships
 from ..extensions import db
 
 user_bp = Blueprint('user', __name__)
@@ -18,7 +19,7 @@ def get_user():
 @login_required
 def get_user_recipes():
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('page', 10, type=int)
 
     # Join Recipe and SavedRecipes, filtering by the current logged-in user
     pagination = (
@@ -94,3 +95,30 @@ def delete_user_profile():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+@user_bp.route('/user/follow/<user_id>', methods=['POST'])
+@login_required
+def follow_user(user_id):
+    user = db.session.salar(sa.select(User).where(User.user_id == user_id))
+    if user is None:
+        return jsonify({'error': f'User id {user_id} not found.'}), 401
+
+    if user == current_user:
+        return jsonify({'error': 'You cannot follow yourself!'}), 401
+
+    current_user.follow(user)
+    db.session.commit()
+
+    return jsonify({'message': f'You have successfully followed {user.name}'}), 201
+
+
+@user_bp.route('/user/followings', methods=['GET'])
+@login_required
+def get_user_relationships():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    user_id = current_user.user_id
+
+    
+    return
