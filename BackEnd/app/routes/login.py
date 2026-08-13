@@ -80,8 +80,8 @@ def login_post():
 '''
 Sends a password reset link to a user's email
 '''
-@login_bp.route('/reset-password', methods=['POST'])
-def reset_password():
+@login_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
     data = request.get_json()
 
     if not data: 
@@ -149,6 +149,7 @@ def reset_password(token):
     return jsonify({
         "message":"Password successfully reset"
     })    
+
 '''
 Logs out a user from their current session
 '''
