@@ -11,11 +11,13 @@ import sqlalchemy.orm as so
 class Relationships(db.Model):
     __tablename__ = 'Relationships'
 
-    followed_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False, primary_key=True)
-    follower_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable = False, primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey('user.user_id', ondelete='CASCADE'), nullable=False, primary_key=True)
+    follower_id = db.Column(db.Integer, db.ForeignKey('user.user_id', ondelete='CASCADE'), nullable = False, primary_key=True)
     followed_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 class User(UserMixin, db.Model):
+    __tablename__ = 'user'
+
     # There's a bunch to the following system I am confused by
     # Source: https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-viii-followers
 
@@ -29,7 +31,7 @@ class User(UserMixin, db.Model):
     # user.following needs to explicitly be ran to load in followers
     following: so.WriteOnlyMapped['User'] = so.relationship(
         # which association table to route to
-        secondary=Relationships, 
+        secondary=Relationships.__table__, 
 
         # PrimaryJoin = how do I match this user to a row in followers
         # SecondaryJoin = Given that row, how do I find the other user
@@ -37,20 +39,22 @@ class User(UserMixin, db.Model):
         primaryjoin=(Relationships.follower_id == user_id),
         secondaryjoin=(Relationships.followed_id == user_id),
         # links the two, modifying one updates the other
-        back_populates='followers')
+        back_populates='followers',
+        passive_deletes=True)
 
     followers: so.WriteOnlyMapped['User'] = so.relationship(
-        secondary=Relationships, 
+        secondary=Relationships.__table__, 
         primaryjoin=(Relationships.followed_id == user_id),
         secondaryjoin=(Relationships.follower_id == user_id),
-        back_populates=('following'))
+        back_populates=('following'),
+        passive_deletes=True)
     
     # Overrides default get_id() function, otherwise we get NotImplementedError()
     def get_id(self):
         return (self.user_id)
 
     def follow(self, user):
-        if not self.is_follwing(user):
+        if not self.is_following(user):
             self.following.add(user)
 
     def unfollow(self, user):
@@ -58,7 +62,7 @@ class User(UserMixin, db.Model):
             self.following.remove(user)
 
     def is_following(self, user):
-        query = self.following.select().where(User.id == user.id)
+        query = self.following.select().where(User.user_id == user.user_id)
         return db.session.scalar(query) is not None
 
     def followers_count(self):
