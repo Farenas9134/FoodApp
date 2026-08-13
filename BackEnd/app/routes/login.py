@@ -4,7 +4,7 @@ from flask_login import login_user, login_required, logout_user
 from sqlalchemy import select
 from ..models import User
 from ..extensions import db
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime, timedelta
 
 login_bp = Blueprint('login', __name__, template_folder='templates')
@@ -80,8 +80,8 @@ def login_post():
 '''
 Sends a password reset link to a user's email
 '''
-@login_bp.route('/forgot-password', methods=['POST'])
-def forgot_password_post():
+@login_bp.route('/reset-password', methods=['POST'])
+def reset_password():
     data = request.get_json()
 
     if not data: 
@@ -117,8 +117,38 @@ Route to reset your password
 '''
 @login_bp.route('/reset-password/<token>')
 def reset_password(token):
-    return 0
 
+    data = request.get_json()
+
+    new_password = data["password"]
+    email = data["email"]
+
+    if not email:
+        return jsonify({
+            "error":"Missing email"
+        }), 400
+
+    if not new_password:
+        return jsonify({
+            "error":"New password can't be empty"
+        }), 400
+
+    user = User.query.filter_by(reset_token=token).first()
+
+    if not user or user.reset_token_expires < datetime.now(datetime.timezone.utc):
+        return jsonify({
+            "error":"Invalid token or expired reset token"
+        }), 400
+
+    hashed_password = generate_password_hash(new_password)
+
+    user.password = hashed_password
+
+    db.session.commit()
+
+    return jsonify({
+        "message":"Password successfully reset"
+    })    
 '''
 Logs out a user from their current session
 '''
