@@ -94,6 +94,16 @@ run_test 201 "POST login with proper credentials" \
     -c cookies.txt \
     "$URL/login"
 
+run_test 400 "POST login with improper credentials" \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d '{
+        "email": "bash-test2@gmail.com",
+        "password": "bash3"
+        }' \
+    -c cookies.txt \
+    "$URL/login"
+
 # 3. Save recipes
 run_test 201 "POST save recipe" \
     -X POST \

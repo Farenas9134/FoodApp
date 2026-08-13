@@ -1,9 +1,11 @@
+import secrets
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, login_required, logout_user
 from sqlalchemy import select
 from ..models import User
 from ..extensions import db
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
+from datetime import datetime, timedelta
 
 login_bp = Blueprint('login', __name__, template_folder='templates')
 
@@ -75,7 +77,78 @@ def login_post():
         "message":"Successful login"
     }), 201
 
-    
+'''
+Sends a password reset link to a user's email
+'''
+@login_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+
+    if not data: 
+        return jsonify({
+            "error": "Missing JSON body"
+        }), 400
+
+    email = data["email"]
+
+    if not email:
+        return jsonify({
+            "error":"Missing email"
+        }), 400
+
+    stmt = select(User).filter_by(email=email)
+    existing_user = db.session.scalars(stmt).first()
+
+    if not existing_user:
+        return jsonify({
+            "error":"User does not exist"
+        }), 400
+
+    existing_user.reset_token = secrets.token_urlsafe(32)
+    existing_user.reset_token_expires = datetime.now(datetime.timezone.utc) + timedelta(hours=1)
+    db.session.commit()
+
+    return jsonify({
+        "message":"Password reset link successfully sent to your email"
+    })
+
+'''
+Route to reset your password
+'''
+@login_bp.route('/reset-password/<token>')
+def reset_password(token):
+
+    data = request.get_json()
+
+    new_password = data["password"]
+    email = data["email"]
+
+    if not email:
+        return jsonify({
+            "error":"Missing email"
+        }), 400
+
+    if not new_password:
+        return jsonify({
+            "error":"New password can't be empty"
+        }), 400
+
+    user = User.query.filter_by(reset_token=token).first()
+
+    if not user or user.reset_token_expires < datetime.now(datetime.timezone.utc):
+        return jsonify({
+            "error":"Invalid token or expired reset token"
+        }), 400
+
+    hashed_password = generate_password_hash(new_password)
+
+    user.password = hashed_password
+
+    db.session.commit()
+
+    return jsonify({
+        "message":"Password successfully reset"
+    })    
 
 '''
 Logs out a user from their current session
@@ -84,4 +157,7 @@ Logs out a user from their current session
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('main.home'))
+    return jsonify({
+        "message":"Successful logout"
+    }), 201
+    # return redirect(url_for('main.home'))
