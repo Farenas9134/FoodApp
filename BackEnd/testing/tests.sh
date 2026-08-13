@@ -10,6 +10,16 @@
 # -u pass login info username:password
 # -v print the full request and response details for debugging
 
+# ===================================================
+
+# QUICK LOGIN
+# curl -X POST http://127.0.0.1:5000/login   -H "Content-Type: application/json"   -d '{"email":"bash-test@gmail.com", "password":"bash"}'   -c cookies.txt
+
+# REUSE COOKIES COMMAND
+# curl blah blah -b cookies.txt
+
+# ===================================================
+
 # Base config (change as needed if the port is diff)
 URL="http://127.0.0.1:5000"
 
@@ -130,13 +140,6 @@ run_test 200 "DELETE user profile" \
     -H "Content-Type: application/json" \
     -b cookies.txt \
     "$URL/user"
-
-# Quick manual curl command:
-# curl -X POST http://127.0.0.1:5000/login   -H "Content-Type: application/json"   -d '{"email":"bash-test@gmail.com", "password":"bash"}'   -c cookies.txt
-
-# Then reuse cookies to send requests to login required routes
-# curl blah blah -b cookies.txt
-
 
 # ============= TESTING RECIPE ROUTES ================
 

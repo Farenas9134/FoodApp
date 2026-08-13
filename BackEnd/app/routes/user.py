@@ -99,7 +99,7 @@ def delete_user_profile():
 @user_bp.route('/user/follow/<user_id>', methods=['POST'])
 @login_required
 def follow_user(user_id):
-    user = db.session.salar(sa.select(User).where(User.user_id == user_id))
+    user = db.session.scalar(sa.select(User).where(User.user_id == user_id))
     if user is None:
         return jsonify({'error': f'User id {user_id} not found.'}), 401
 
@@ -111,14 +111,98 @@ def follow_user(user_id):
 
     return jsonify({'message': f'You have successfully followed {user.name}'}), 201
 
-
-@user_bp.route('/user/followings', methods=['GET'])
+@user_bp.route('/user/unfollow/<user_id>', methods=['DELETE'])
 @login_required
-def get_user_relationships():
+def unfollow_user(user_id):
+    user = db.session.scalar(sa.select(User).where(User.user_id == user_id))
+    if user is None:
+        return jsonify({'error': f'User id {user_id} not found.'}), 401
+
+    if user == current_user:
+        return jsonify({'error': 'You cannot unfollow yourself!'}), 401
+
+    current_user.unfollow(user)
+    db.session.commit()
+
+    return jsonify({'message': f'You have successfully unfollowed {user.name}'}), 201
+
+@user_bp.route('/user/followers', methods=['GET'])
+@login_required
+def get_user_followers():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
 
-    user_id = current_user.user_id
+    # Generates SQL select construct from the instance relationship
+    stmt = current_user.followers.select().order_by(Relationships.followed_at.desc())
 
+    pagination = db.paginate(
+        stmt, page=page, per_page=per_page, error_out=False
+    )  
+
+    followers_data = []
+    for user in pagination.items:
+        followers_data.append({
+            'user_id': user.user_id,
+            'name': user.name,
+            'email': user.email
+        })
     
-    return
+    return jsonify({
+        'followers' : followers_data,
+        'total': pagination.total,
+        'pages': pagination.pages,
+        'current page': pagination.page,
+        'has_next': pagination.has_next,
+        'has_prev': pagination.has_prev
+    }), 200
+
+@user_bp.route('/user/followings', methods=['GET'])
+@login_required
+def get_user_followings():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    # Generates SQL select construct from the instance relationship
+    stmt = current_user.following.select().order_by(Relationships.followed_at.desc())
+
+    pagination = db.paginate(
+        stmt, page=page, per_page=per_page, error_out=False
+    )  
+
+    following_data = []
+    for user in pagination.items:
+        following_data.append({
+            'user_id': user.user_id,
+            'name': user.name,
+            'email': user.email
+        })
+    
+    return jsonify({
+        'following' : following_data,
+        'total': pagination.total,
+        'pages': pagination.pages,
+        'current page': pagination.page,
+        'has_next': pagination.has_next,
+        'has_prev': pagination.has_prev
+    }), 200
+
+# TESTING ROUTE ONLY
+@user_bp.route('/all-users', methods=['GET'])
+@login_required
+def get_all_users():
+    all_users = db.session.scalars(sa.select(User)).all()
+
+    user_list = []
+    for user in all_users:
+        user_list.append({
+            'user_id': user.user_id,
+            'name': user.name,
+            'email': user.email,
+            'followers_count': user.followers_count(),
+            'following_count': user.following_count()
+        })
+
+    return jsonify({
+            'count': len(user_list),
+            'users': user_list
+        }), 200
