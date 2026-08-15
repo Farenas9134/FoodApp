@@ -5,7 +5,7 @@ from sqlalchemy import select
 from ..models import User
 from ..extensions import db
 from werkzeug.security import check_password_hash, generate_password_hash
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 login_bp = Blueprint('login', __name__, template_folder='templates')
 
@@ -104,8 +104,9 @@ def forgot_password():
             "error":"User does not exist"
         }), 400
 
-    existing_user.reset_token = secrets.token_urlsafe(32)
-    existing_user.reset_token_expires = datetime.now(datetime.timezone.utc) + timedelta(hours=1)
+    token = secrets.token_urlsafe(32)
+    existing_user.reset_token = token
+    existing_user.reset_token_expires = datetime.now(timezone.utc) + timedelta(hours=1)
     db.session.commit()
 
     return jsonify({
