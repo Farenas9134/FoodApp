@@ -106,7 +106,7 @@ def forgot_password():
 
     token = secrets.token_urlsafe(32)
     existing_user.reset_token = token
-    existing_user.reset_token_expires = datetime.now(timezone.utc) + timedelta(hours=1)
+    existing_user.reset_token_expires = (datetime.now(timezone.utc) + timedelta(hours=1)).replace(tzinfo=None)
     db.session.commit()
 
     return jsonify({
@@ -116,7 +116,7 @@ def forgot_password():
 '''
 Route to reset your password
 '''
-@login_bp.route('/reset-password/<token>')
+@login_bp.route('/reset-password/<token>', methods=['POST'])
 def reset_password(token):
 
     data = request.get_json()
@@ -136,7 +136,7 @@ def reset_password(token):
 
     user = User.query.filter_by(reset_token=token).first()
 
-    if not user or user.reset_token_expires < datetime.now(datetime.timezone.utc):
+    if not user or user.reset_token_expires < datetime.now(timezone.utc).replace(tzinfo=None) or user.reset_token != token:
         return jsonify({
             "error":"Invalid token or expired reset token"
         }), 400
@@ -144,6 +144,9 @@ def reset_password(token):
     hashed_password = generate_password_hash(new_password)
 
     user.password = hashed_password
+
+    user.reset_token = None
+    user.reset_token_expires = None
 
     db.session.commit()
 

@@ -26,6 +26,10 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(100), nullable=False, unique=True)
     password = db.Column(db.String(100), nullable=False)
 
+    # Relevant for password reset
+    reset_token = db.Column(db.String(100), nullable=True)
+    reset_token_expires = db.Column(db.DateTime(timezone=True), nullable = True)
+
     # rows where I am the follower, get me the followed user
     # WiteOnlyMapped prevents loading every row into a Python list,
     # user.following needs to explicitly be ran to load in followers
