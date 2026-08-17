@@ -111,7 +111,6 @@ run_test 400 "POST login with improper credentials" \
         "email": "bash-test2@gmail.com",
         "password": "bash3"
         }' \
-    -c cookies.txt \
     "$URL/login"
 
 # 3. Save recipes
@@ -133,13 +132,6 @@ run_test 404 "DELETE recipe you haven't saved" \
     -H "Content-Type: application/json" \
     -b cookies.txt \
     "$URL/user/recipes/1"
-
-# 5. Delete user
-run_test 200 "DELETE user profile" \
-    -X DELETE \
-    -H "Content-Type: application/json" \
-    -b cookies.txt \
-    "$URL/user"
 
 # 6. Forgot password
 
@@ -191,6 +183,12 @@ run_test 400 "POST reset password invalid token" \
     -b cookies.txt \
     "$URL/reset-password/faketoken"
 
+# 5. Delete user
+run_test 200 "DELETE user profile" \
+    -X DELETE \
+    -H "Content-Type: application/json" \
+    -b cookies.txt \
+    "$URL/user"
 
 # ============= TESTING RECIPE ROUTES ================
 
@@ -239,11 +237,13 @@ run_test 401 "POST submit recipe with missing fields" \
     }' \
     "$URL/recipes-submit"
 
+
 run_test 400 "POST submit recipe with empty JSON" \
     -X POST \
     -H "Content-Type: application/json" \
     -d '{}' \
     "$URL/recipes-submit"
+
 
 run_test 400 "POST submit recipe with broken JSON syntax" \
     -X POST \
@@ -266,6 +266,7 @@ run_test 200 "Update recipe you own" \
     }' \
     "$URL/recipes/20"
 
+
 run_test 403 "Update recipe you don't own" \
     -X PUT \
     -H "Content-Type: application/json" \
@@ -273,6 +274,7 @@ run_test 403 "Update recipe you don't own" \
         "title" : "Changed You Woops Not Good!"
     }' \
     "$URL/recipes/1"
+
 
 run_test 400 "PUT recipe title that conflicts with existing recipe" \
     -X PUT \
@@ -286,6 +288,7 @@ run_test 200 "DELETE recipe you own" \
     -H "Content-Type: application/json" \
     "$URL/recipes/20"
 
+
 run_test 401 "DELETE recipe you don't own" \
     -X DELETE \
     -H "Content-Type: application/json" \
@@ -295,8 +298,10 @@ run_test 401 "DELETE recipe you don't own" \
 run_test 200 "Search for an existing recipe" \
     "$URL/recipes/1"
 
+
 run_test 404 "Search for a recipe that doesn't exist" \
     "$URL/recipes/99999999999"
+
 
 run_test 404 "GET recipe with non-integer ID" \
     "$URL/recipes/abc"
