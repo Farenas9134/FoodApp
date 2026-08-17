@@ -142,6 +142,18 @@ run_test 200 "DELETE user profile" \
     "$URL/user"
 
 # 6. Forgot password
+
+# Invalid email
+run_test 400 "POST forgot password invalid email" \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d '{
+        "email": "not-valid@gmail.com"
+        }' \
+    -b cookies.txt \
+    "$URL/forgot-password"
+
+# Valid email
 run_test 200 "POST forgot password" \
     -X POST \
     -H "Content-Type: application/json" \
@@ -156,6 +168,8 @@ TOKEN=$(python ../get_reset_token.py)
 echo "Token: $TOKEN"
 
 # 7. Reset password
+
+# Valid token
 run_test 200 "POST reset password" \
     -X POST \
     -H "Content-Type: application/json" \
@@ -165,6 +179,17 @@ run_test 200 "POST reset password" \
         }' \
     -b cookies.txt \
     "$URL/reset-password/$TOKEN"
+
+# Invalid token
+run_test 400 "POST reset password invalid token" \
+    -X POST \
+    -H "Content-Type: application/json" \
+    -d '{
+        "email": "bash-test2@gmail.com"
+        "password": "newbash"
+        }' \
+    -b cookies.txt \
+    "$URL/reset-password/faketoken"
 
 
 # ============= TESTING RECIPE ROUTES ================
