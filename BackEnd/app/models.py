@@ -79,7 +79,43 @@ class User(UserMixin, db.Model):
             self.following.select().subquery())
         return db.session.scalar(query)
 
-# What should this schema look like?
+
+class Ingredient(db.Model):
+    __tablename__ = 'ingredient'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+
+    # Core macros
+    calories = db.Column(db.Float, nullable=False, default=0.0)
+    protein_g = db.Column(db.Float, default=0.0)
+    carbs_g = db.Column(db.Float, default=0.0)
+    fat_g = db.Column(db.Float, default=0.0)
+
+    # Detailed micronutrients
+    # Figure out later, focus on macros
+    # micronutrients = db.Column(db.JSON, default=dict)
+
+class RecipeIngredient(db.Model):
+    __tablename__ = "RecipeIngredient"
+
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.recipe_id', ondelete='CASCADE'), primary_key=True)
+    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredient.id', ondelete='CASCADE'), primary_key=True)
+
+    amount = db.Column(db.Float, nullable=False, default=0.0)
+    unit = db.Column(db.String(50), nullable=False, default='')
+    notes = db.Column(db.String(200), default='')
+
+    # Direct relationship to Ingredient Model
+    ingredient: so.Mapped['Ingredient'] = so.relationship()
+
+
+class UserPantry(db.Model):
+    __tablename__ = "UserPantry"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredient.id'), nullable=False)
 class Recipe(db.Model):
     # sets name of db table in SQLite
     __tablename__ = "recipes"
@@ -88,7 +124,6 @@ class Recipe(db.Model):
     title = db.Column(db.String(100), nullable=False)
     source_url = db.Column(db.String(1000), nullable=False)
     source_platform = db.Column(db.String(100), nullable=False)
-    ingredients = db.Column(db.JSON, nullable=False, default=list)
     instructions = db.Column(db.JSON, nullable=False)
     image_url = db.Column(db.String(1000), nullable=False, default=list)
     tags = db.Column(db.String(100))
@@ -97,6 +132,11 @@ class Recipe(db.Model):
     created_by = db.Column(db.String(100), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     last_updated = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    recipe_ingredients: so.WriteOnlyMapped['RecipeIngredient'] = so.relationship(
+        cascade='all, delete-orphan',
+        passive_deletes=True
+    )
 
         
     def to_dict(self):

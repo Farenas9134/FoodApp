@@ -188,7 +188,7 @@ def get_user_followings():
 
 # TESTING ROUTE ONLY
 @user_bp.route('/all-users', methods=['GET'])
-@login_required
+# @login_required
 def get_all_users():
     all_users = db.session.scalars(sa.select(User)).all()
 
