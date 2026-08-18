@@ -38,6 +38,12 @@ Invoke-RestMethod -Uri "http://127.0.0.1:5000/login" `
     -Method POST `
     -ContentType "application/json" `
     -Body '{"email":"curl-test@gmail.com", "password":"curl"}'
+
+-- Testing forgot password
+Invoke-RestMethod -Uri "http://127.0.0.1:5000/forgot-password" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body '{"email":"curl-test@gmail.com"}'
     
 
 --- Testing recipe submit
