@@ -157,8 +157,6 @@ run_test 200 "POST forgot password" \
 
 TOKEN=$(python ../get_reset_token.py)
 
-echo "Token: $TOKEN"
-
 # 7. Reset password
 
 # Valid token
