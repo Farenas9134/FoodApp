@@ -17,7 +17,7 @@ def submit_recipe():
 
     required_fields = [
         "title", "source_url", "source_platform",
-        "ingredients", "instructions", "image_url", "created_by"
+        "recipe_ingredients", "instructions", "image_url", "created_by"
     ]
 
     missing = []
