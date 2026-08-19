@@ -22,21 +22,17 @@ app = create_app()
 
 recipe_json = 'testing/recipes-main/recipes.json'
 
-RECIPES_TO_ADD = 1
+RECIPES_TO_ADD = 20
 
-# measures = ["tbsp","tablespoon","tsp","teaspoon","oz",
-#             "ounce","fl. oz","fluid ounce","cup","qt", 
-#             "quart","pt","pint","gal","gallon","mL","ml",
-#             "milliliter","g","grams","kg","kilogram","l","liter"]
-
-# sorted_measures = sorted(measures, key=len, reverse=True)
-# units_regex = "|".join(re.escape(m) for m in sorted_measures)
-
-# REGEX IS ANNOYING YET AWESOME
-# WELL I GUESS SOMEONE ALREADY DID THIS
-# (?P<something>...) <- defines a capture group to search for whatever rule after its name
-# Made each group optional to not fail for ingredients without a count listed
-# pattern = rf"^(?:(?P<amount>\d+(?:\/\d+|\.\d+)?)\s*)?(?P<unit>(?:{units_regex})\b\s*)?(?P<name>.*?)(?:,\s*(?P<notes>.*))?$"
+def safe_parse_amounts(raw_quantity):
+    'Converts quantity to float. Returns amount, extra_notes'
+    if not raw_quantity:
+        return 0.0, ''
+    try:
+        return float(raw_quantity), ""
+    except (ValueError, TypeError):
+        # Parse_ingredient() likely returned non-numeric string as the amount
+        return 0.0, str(raw_quantity)
 
 if __name__ == "__main__":
     # lets python know we want the code to run and communicate with the app and its db
@@ -45,23 +41,20 @@ if __name__ == "__main__":
             recipes_data = json.load(f)
 
         tables_to_reset = [
+            RecipeIngredient.__table__,
             Recipe.__table__
         ]
 
+        # Drop/Delete all data concerning tables we want to reseed
         db.metadata.drop_all(bind=db.engine, tables=tables_to_reset)
         db.metadata.create_all(bind=db.engine, tables=tables_to_reset)
 
         print("Recipe tables reset successfully.")
 
-        # grabs all the attrs from recipe minus the ones mentioned
-        recipe_fields = set(Recipe.__table__.columns.keys()) - {'recipe_id', 'created_at', 'last_updated'}
-
-        # {'tags', 'instructions', 'source_platform', 'image_url', 'title', 'source_url', 'submitted_by','created_by'}
-
+        # Extract recipe info for RECIPES_TO_ADD number of recipes
         for i in range(RECIPES_TO_ADD):
             ingredient_matches = []
             for field, value in recipes_data[i].items():
-                # print(field,": ", value, '\n')
                 if field == 'Name':
                     title = value
                 elif field == 'url':
@@ -90,6 +83,7 @@ if __name__ == "__main__":
                         #     print("Purpose:", result.purpose.text)
                         # print("\n")
 
+            # Arbitrary info for seeded recipes
             image_url = f'{title}.jpg'
             source_platform = 'Dataset'
             tags = "seeded"
@@ -105,22 +99,39 @@ if __name__ == "__main__":
             db.session.add(new_recipe)
             db.session.flush()
 
+            # Add to seen ids to avoid doubles
+            seen_ingredient_ids = set()
+
             # For each ingredient info, make ingredient instance or not
             for match in ingredient_matches:
+                if not match.name:
+                    continue
                 name = match.name[0].text.lower()
-                amount = match.amount[0].quantity if len(match.amount) ==1 else 0
-                unit = match.amount[0].unit if len(result.amount) ==1 else ''
-                comment = match.comment.text if match.comment ==1 else ''
 
+                raw_qty = match.amount[0].quantity if len(match.amount) ==1 else 0
+                amount, extra_note = safe_parse_amounts(raw_qty)
+                
+                unit = str(match.amount[0].unit) if len(match.amount) ==1 else ''
+
+                # Extract comment and merge any extra notes
+                base_comment = match.comment.text if match.comment else ''
+                comment = f"{extra_note} {base_comment}".strip()
+
+                # Fetch or create Ingredient
                 ingredient = Ingredient.query.filter_by(name=name).first()
-
                 if not ingredient:
                     ingredient = Ingredient(name=name)
                     db.session.add(ingredient)
                     db.session.flush()
-                else:
-                    print(f"Skipping existing ingredient")
 
+                # Skip duplicates for this recipe
+                if ingredient.id in seen_ingredient_ids:
+                    print(f"Skipping duplicate ingredient '{name}' in recipe '{title}'")
+                    continue
+
+                seen_ingredient_ids.add(ingredient.id)
+
+                # Add RecipeIngredient instance
                 recipe_ingredient = RecipeIngredient(recipe_id=new_recipe.recipe_id, ingredient_id=ingredient.id, amount=amount, unit=unit, notes=comment)
                 db.session.add(recipe_ingredient)
 

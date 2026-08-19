@@ -49,4 +49,7 @@ def create_app():
     from .routes.user import user_bp
     app.register_blueprint(user_bp)
 
+    from .routes.ingredients import ingredient_bp
+    app.register_blueprint(ingredient_bp)
+
     return app
