@@ -71,7 +71,7 @@ def get_recipes():
         )
 
     return jsonify({
-         'recipe': [recipe.to_dict() for recipe in pagination.items],
+         'recipe': [recipe.to_dict(2) for recipe in pagination.items],
          'total': pagination.total,
          'pages': pagination.pages,
          'current_page': page,
@@ -83,7 +83,11 @@ def get_recipes():
 def get_recipe_by_id(recipe_id):
     # get_or_404 automatically returns 404 error if recipe not found
     recipe = Recipe.query.get_or_404(recipe_id)
-    return jsonify(recipe.to_dict()), 200
+              
+    return jsonify({
+         'recipe': recipe.to_dict(),
+         'ingredients': recipe.get_ingredients()
+    }), 200
 
 @recipes_db.route('/recipes/search', methods=['GET'])
 def search_recipes():
@@ -118,7 +122,7 @@ def search_recipes():
     pagination = Recipe.query.filter(db.and_(*conditions)).paginate(page=page, per_page=per_page, error_out=False)
 
     return jsonify({
-             'recipes': [recipe.to_dict() for recipe in pagination.items],
+             'recipes': [recipe.to_dict(2) for recipe in pagination.items],
              'total': pagination.total,
              'pages': pagination.pages,
              'current_page': page,
@@ -198,7 +202,7 @@ def get_recent_recipes():
     ).order_by(Recipe.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
 
     return jsonify({
-         'recipes': [recipe.to_dict() for recipe in pagination.items],
+         'recipes': [recipe.to_dict(2) for recipe in pagination.items],
          'total': pagination.total,
          'pages': pagination.pages,
          'current_page': page,

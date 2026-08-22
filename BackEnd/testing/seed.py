@@ -27,12 +27,12 @@ RECIPES_TO_ADD = 20
 def safe_parse_amounts(raw_quantity):
     'Converts quantity to float. Returns amount, extra_notes'
     if not raw_quantity:
-        return 0.0, ''
+        return 1.0, ''
     try:
         return float(raw_quantity), ""
     except (ValueError, TypeError):
         # Parse_ingredient() likely returned non-numeric string as the amount
-        return 0.0, str(raw_quantity)
+        return 1.0, str(raw_quantity)
 
 if __name__ == "__main__":
     # lets python know we want the code to run and communicate with the app and its db

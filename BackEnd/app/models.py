@@ -116,7 +116,16 @@ class RecipeIngredient(db.Model):
     # Direct relationship to Ingredient Model
     ingredient: so.Mapped['Ingredient'] = so.relationship()
 
+    def to_dict(self):
+        # Grab ingredient info from linked Ingredient model
+        data = self.ingredient.to_dict() if self.ingredient else {}
 
+        # Add recipe specific details
+        data['amount'] = self.amount
+        data['unit'] = self.unit
+        data['notes'] = self.notes
+
+        return data
 class UserPantry(db.Model):
     __tablename__ = "UserPantry"
 
@@ -146,7 +155,7 @@ class Recipe(db.Model):
     )
 
         
-    def to_dict(self):
+    def to_dict(self, mode=1):
         data = {}
         for column in self.__table__.columns:
             value = getattr(self, column.name)
@@ -154,8 +163,20 @@ class Recipe(db.Model):
             if isinstance(value, datetime):
                 # turns datetime into formatted string
                 value = value.isoformat()
+            # Simple mode for minimal recipe display instead of huge blocky text
+            if mode == 2 and column.name == 'instructions':
+                continue
             data[column.name] = value
         return data
+
+    def get_ingredients(self):
+        # Generate select query from writeonlymapped relationship
+        stmt = self.recipe_ingredients.select()
+
+        # execute and return all rows as a python list
+        recipe_ingredients = db.session.scalars(stmt).all()
+
+        return [ri.to_dict() for ri in recipe_ingredients]
 
 class SavedRecipes(db.Model):
     __tablename__ = 'SavedRecipes'
