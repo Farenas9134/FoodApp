@@ -1,5 +1,7 @@
 from flask import Flask
 from .extensions import db, migrate, login_manager
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
 
 # What is CORS? https://www.geeksforgeeks.org/python/how-to-install-flask-cors-in-python/
 from flask_cors import CORS
@@ -17,6 +19,9 @@ def create_app():
     # Initialize extensions with app
     db.init_app(app)
     migrate.init_app(app, db, render_as_batch=True)
+
+    # Initialize Flask-Admin
+    admin = Admin(app, name="MyApp")
 
     login_manager.init_app(app)
 

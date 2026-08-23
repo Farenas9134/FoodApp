@@ -30,6 +30,9 @@ class User(UserMixin, db.Model):
     reset_token = db.Column(db.String(100), nullable=True)
     reset_token_expires = db.Column(db.DateTime(timezone=True), nullable = True)
 
+    # Admin Flag
+    is_admin = db.Column(db.Boolean, default=False, nullable = False)
+    
     # rows where I am the follower, get me the followed user
     # WiteOnlyMapped prevents loading every row into a Python list,
     # user.following needs to explicitly be ran to load in followers
@@ -92,6 +95,10 @@ class Ingredient(db.Model):
     carbs_g = db.Column(db.Float, default=0.0)
     fat_g = db.Column(db.Float, default=0.0)
 
+    # Permission & Data Integrity Control
+    is_verified = db.Column(db.Boolean, default=False, nullable = False)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=True)
+
     # Detailed micronutrients
     # Figure out later, focus on macros
     # micronutrients = db.Column(db.JSON, default=dict)
@@ -102,6 +109,18 @@ class Ingredient(db.Model):
             value = getattr(self, column.name)
             data[column.name] = value
         return data
+
+    @classmethod
+    def get_visible_for_user(cls, user_id):
+        "Returns all global ingredients + custom ingredients created by user"
+        stmt = sa.select(cls).where(
+            sa.or_(
+                cls.is_verified == True,
+                cls.created_by == user_id
+            )
+        )
+
+        return db.session.scalars(stmt.all())
 
 class RecipeIngredient(db.Model):
     __tablename__ = "RecipeIngredient"

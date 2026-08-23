@@ -22,7 +22,7 @@ app = create_app()
 
 recipe_json = 'testing/recipes-main/recipes.json'
 
-RECIPES_TO_ADD = 20
+RECIPES_TO_ADD = 1
 
 def safe_parse_amounts(raw_quantity):
     'Converts quantity to float. Returns amount, extra_notes'

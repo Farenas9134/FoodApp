@@ -5,6 +5,7 @@ import sqlalchemy as sa
 
 from ..models import Recipe, User, SavedRecipes, Relationships
 from ..extensions import db
+from ..utils.decorators import admin_required
 
 user_bp = Blueprint('user', __name__)
 
@@ -188,7 +189,8 @@ def get_user_followings():
 
 # TESTING ROUTE ONLY
 @user_bp.route('/all-users', methods=['GET'])
-# @login_required
+@login_required
+@admin_required
 def get_all_users():
     all_users = db.session.scalars(sa.select(User)).all()
 

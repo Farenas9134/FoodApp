@@ -3,6 +3,8 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from sqlalchemy import MetaData
 
+import sqlalchemy as sa
+
 
 # Initialize SQLAlchemy instance (outside create_app for import access)
 
