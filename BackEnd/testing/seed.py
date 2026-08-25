@@ -14,8 +14,6 @@ import json
 from app import create_app
 from app.extensions import db
 from app.models import User, Recipe, RecipeIngredient, Ingredient
-from sqlalchemy import text
-import re
 from ingredient_parser import parse_ingredient
 
 app = create_app()
