@@ -41,17 +41,17 @@ def edit_ingredient(ingredient_id):
     user_id = current_user.user_id
     data = request.get_json()
     if not data:
-            return jsonify({'error':'No data provided'}), 400
+        return jsonify({'error':'No data provided'}), 400
     
     ingredient = Ingredient.query.get_or_404(ingredient_id)
 
     # Check if ingredient is a staple/essential ingredient
     if ingredient.is_verified:
-        jsonify({"error": "Only admin can edit this ingredient"}), 400
+        return jsonify({"error": "Only admin can edit this ingredient"}), 400
 
     # Check if ingredient submitted by user
     if user_id != ingredient.created_by:
-        jsonify({'error': 'Only user who submitted this ingredient can change it.'}), 400
+        return jsonify({'error': 'Only user who submitted this ingredient can change it.'}), 400
 
     mutable_i_field = set(Ingredient.__table__.columns.keys()) - {'id', 'is_verified', 'created_by'}
 
@@ -65,10 +65,10 @@ def edit_ingredient(ingredient_id):
                     )
                     existing = db.session.scalars(stmt).first()
                     if existing:
-                        return jsonify({'error': f'{field.replace('_', '').title()} already taken'}), 400
+                        return jsonify({'error': f"{field.replace('_', '').title()} already taken"}), 400
                 setattr(ingredient, field, value)
 
-        db.sesion.commit()
+        db.session.commit()
         return jsonify({'message': "Sucessfully changed this ingredient", 'ingredient':ingredient.to_dict()}), 200
     except Exception as e:
         db.session.rollback()
