@@ -30,6 +30,9 @@ class User(UserMixin, db.Model):
     reset_token = db.Column(db.String(100), nullable=True)
     reset_token_expires = db.Column(db.DateTime(timezone=True), nullable = True)
 
+    # Admin Flag
+    is_admin = db.Column(db.Boolean, default=False, nullable = False)
+    
     # rows where I am the follower, get me the followed user
     # WiteOnlyMapped prevents loading every row into a Python list,
     # user.following needs to explicitly be ran to load in followers
@@ -79,7 +82,75 @@ class User(UserMixin, db.Model):
             self.following.select().subquery())
         return db.session.scalar(query)
 
-# What should this schema look like?
+
+class Ingredient(db.Model):
+    __tablename__ = 'ingredient'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+
+    # Core macros
+    calories = db.Column(db.Float, nullable=False, default=0.0)
+    protein_g = db.Column(db.Float, default=0.0)
+    carbs_g = db.Column(db.Float, default=0.0)
+    fat_g = db.Column(db.Float, default=0.0)
+
+    # Permission & Data Integrity Control
+    is_verified = db.Column(db.Boolean, default=False, nullable = False)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=True)
+
+    # Detailed micronutrients
+    # Figure out later, focus on macros
+    # micronutrients = db.Column(db.JSON, default=dict)
+
+    def to_dict(self):
+        data = {}
+        for column in self.__table__.columns:
+            value = getattr(self, column.name)
+            data[column.name] = value
+        return data
+
+    @classmethod
+    def get_visible_for_user(cls, user_id):
+        "Returns all global ingredients + custom ingredients created by user"
+        stmt = sa.select(cls).where(
+            sa.or_(
+                cls.is_verified == True,
+                cls.created_by == user_id
+            )
+        )
+
+        return db.session.scalars(stmt.all())
+
+class RecipeIngredient(db.Model):
+    __tablename__ = "RecipeIngredient"
+
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.recipe_id', ondelete='CASCADE'), primary_key=True)
+    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredient.id', ondelete='CASCADE'), primary_key=True)
+
+    amount = db.Column(db.Float, nullable=False, default=0.0)
+    unit = db.Column(db.String(50), nullable=False, default='')
+    notes = db.Column(db.String(200), default='')
+
+    # Direct relationship to Ingredient Model
+    ingredient: so.Mapped['Ingredient'] = so.relationship()
+
+    def to_dict(self):
+        # Grab ingredient info from linked Ingredient model
+        data = self.ingredient.to_dict() if self.ingredient else {}
+
+        # Add recipe specific details
+        data['amount'] = self.amount
+        data['unit'] = self.unit
+        data['notes'] = self.notes
+
+        return data
+class UserPantry(db.Model):
+    __tablename__ = "UserPantry"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
+    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredient.id'), nullable=False)
 class Recipe(db.Model):
     # sets name of db table in SQLite
     __tablename__ = "recipes"
@@ -88,7 +159,6 @@ class Recipe(db.Model):
     title = db.Column(db.String(100), nullable=False)
     source_url = db.Column(db.String(1000), nullable=False)
     source_platform = db.Column(db.String(100), nullable=False)
-    ingredients = db.Column(db.JSON, nullable=False, default=list)
     instructions = db.Column(db.JSON, nullable=False)
     image_url = db.Column(db.String(1000), nullable=False, default=list)
     tags = db.Column(db.String(100))
@@ -98,8 +168,13 @@ class Recipe(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     last_updated = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
+    recipe_ingredients: so.WriteOnlyMapped['RecipeIngredient'] = so.relationship(
+        cascade='all, delete-orphan',
+        passive_deletes=True
+    )
+
         
-    def to_dict(self):
+    def to_dict(self, mode=1):
         data = {}
         for column in self.__table__.columns:
             value = getattr(self, column.name)
@@ -107,8 +182,20 @@ class Recipe(db.Model):
             if isinstance(value, datetime):
                 # turns datetime into formatted string
                 value = value.isoformat()
+            # Simple mode for minimal recipe display instead of huge blocky text
+            if mode == 2 and column.name == 'instructions':
+                continue
             data[column.name] = value
         return data
+
+    def get_ingredients(self):
+        # Generate select query from writeonlymapped relationship
+        stmt = self.recipe_ingredients.select()
+
+        # execute and return all rows as a python list
+        recipe_ingredients = db.session.scalars(stmt).all()
+
+        return [ri.to_dict() for ri in recipe_ingredients]
 
 class SavedRecipes(db.Model):
     __tablename__ = 'SavedRecipes'
