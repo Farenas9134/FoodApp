@@ -50,7 +50,7 @@ if __name__ == '__main__':
                     # Grab macro nutrients per 100g
                     for row in value:
                         if row['nutrient']['name'] == 'Protein':
-                            protein= row['amount']
+                            protein = row['amount']
                         if row['nutrient']['name'] == 'Carbohydrate, by difference':
                             carbs = row['amount']
                         if row['nutrient']['name'] == 'Total fat (NLEA)':

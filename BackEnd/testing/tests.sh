@@ -133,7 +133,7 @@ run_test 404 "DELETE recipe you haven't saved" \
     -b cookies.txt \
     "$URL/user/recipes/1"
 
-# 6. Forgot password
+# 5. Forgot password
 
 # Invalid email
 run_test 400 "POST forgot password invalid email" \
@@ -157,7 +157,7 @@ run_test 200 "POST forgot password" \
 
 TOKEN=$(python ../get_reset_token.py)
 
-# 7. Reset password
+# 6. Reset password
 
 # Valid token
 run_test 200 "POST reset password" \
@@ -181,7 +181,7 @@ run_test 400 "POST reset password invalid token" \
     -b cookies.txt \
     "$URL/reset-password/faketoken"
 
-# 5. Delete user
+# 7. Delete user
 run_test 200 "DELETE user profile" \
     -X DELETE \
     -H "Content-Type: application/json" \
