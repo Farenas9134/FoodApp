@@ -201,7 +201,7 @@ run_test 201 "POST submit recipe with all fields" \
         "title": "Change Me!",
         "source_url": "changeMe.com",
         "source_platform": "Instagram",
-        "ingredients": "Changes, Life, Unemployment",
+        "recipe_ingredients": "Changes, Life, Unemployment",
         "instructions": "step 1) Change Everything. Step 2) Be better",
         "image_url": "change.jpg",
         "created_by": "Chef Change"
@@ -215,7 +215,7 @@ run_test 400 "POST submit existing recipe" \
         "title": "Change Me!",
         "source_url": "changeMe.com",
         "source_platform": "Instagram",
-        "ingredients": "Changes, Life, Unemployment",
+        "recipe_ingredients": "Changes, Life, Unemployment",
         "instructions": "step 1) Change Everything. Step 2) Be better",
         "image_url": "change.jpg",
         "created_by": "Chef Change"
@@ -262,7 +262,7 @@ run_test 200 "Update recipe you own" \
         "title" : "Changed You!",
         "tags" : "silly, testy, unreal"
     }' \
-    "$URL/recipes/20"
+    "$URL/recipes/5"
 
 
 run_test 403 "Update recipe you don't own" \
@@ -278,13 +278,13 @@ run_test 400 "PUT recipe title that conflicts with existing recipe" \
     -X PUT \
     -H "Content-Type: application/json" \
     -d '{ "title": "Christmas pie" }' \
-    "$URL/recipes/20"
+    "$URL/recipes/5"
 
 # 5. Delete Recipe
 run_test 200 "DELETE recipe you own" \
     -X DELETE \
     -H "Content-Type: application/json" \
-    "$URL/recipes/20"
+    "$URL/recipes/5"
 
 
 run_test 401 "DELETE recipe you don't own" \

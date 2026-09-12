@@ -7,6 +7,10 @@
 
     Run in BackEnd directory:
         python -m testing.seed
+    
+    *****
+    WONT WORK UNLESS YOU HAVE DATASET THAT I HAVEN'T PUSHED CAUSE IT'S HUGE
+    *****
 """
 
 import json
@@ -20,7 +24,7 @@ app = create_app()
 
 recipe_json = 'testing/recipes-main/recipes.json'
 
-RECIPES_TO_ADD = 1
+RECIPES_TO_ADD = 5
 
 def safe_parse_amounts(raw_quantity):
     'Converts quantity to float. Returns amount, extra_notes'
@@ -43,11 +47,15 @@ if __name__ == "__main__":
             Recipe.__table__
         ]
 
-        # Drop/Delete all data concerning tables we want to reseed
-        db.metadata.drop_all(bind=db.engine, tables=tables_to_reset)
-        db.metadata.create_all(bind=db.engine, tables=tables_to_reset)
+        # Asks if you want to delete previous data or not
+        delete_choice = input("Insert 'Yes' if you would like to wipe affected tables listed EOL.\n Skip otherwise. (RecipeIngredient & Recipe): ")
+        if delete_choice.strip().lower() == 'yes':
+            # Drop/Delete all data concerning tables we want to reseed
+            db.metadata.drop_all(bind=db.engine, tables=tables_to_reset)
+            db.metadata.create_all(bind=db.engine, tables=tables_to_reset)
 
-        print("Recipe tables reset successfully.")
+            print("Recipe tables reset successfully.")
+        else: print("Recipe tables left with prev. data")
 
         # Extract recipe info for RECIPES_TO_ADD number of recipes
         for i in range(RECIPES_TO_ADD):
@@ -96,6 +104,7 @@ if __name__ == "__main__":
                                 instructions=instructions, image_url=image_url, source_platform=source_platform, tags=tags, submitted_by=submitted_by)
             db.session.add(new_recipe)
             db.session.flush()
+            print(f"Added {title} recipe into database!")
 
             # Add to seen ids to avoid doubles
             seen_ingredient_ids = set()

@@ -44,7 +44,7 @@ def get_user_recipes():
 @user_bp.route('/user/recipes/<recipe_id>', methods=['POST'])
 @login_required
 def save_recipe(recipe_id):
-    recipe = Recipe.query.get_or_404(recipe_id)
+    recipe = Recipe.query.get_or_404(recipe_id, "error: Recipe does not exist!")
 
     saved_recipe = SavedRecipes(user_id=current_user.user_id, recipe_id=recipe_id)
     db.session.add(saved_recipe)

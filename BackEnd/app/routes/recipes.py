@@ -8,6 +8,9 @@ from ..extensions import db
 
 recipes_db = Blueprint('recipes', __name__)
 
+# NEEDS UPDATING FOR RECIPE INGREDIENT OVERHUAL
+# EXAMPLE/GUIDE IN STAPLE TESTING FILE
+# NEED TO CREATE INGREDIENT ELEMENTS IF NOT EXISTINGG AND THEN ADD AS A RECIPE_INGREDIENT
 @recipes_db.route('/recipes-submit', methods=["POST"])
 # @login_required
 def submit_recipe():
@@ -82,7 +85,7 @@ def get_recipes():
 @recipes_db.route('/recipes/<recipe_id>', methods=["GET"])
 def get_recipe_by_id(recipe_id):
     # get_or_404 automatically returns 404 error if recipe not found
-    recipe = Recipe.query.get_or_404(recipe_id)
+    recipe = Recipe.query.get_or_404(recipe_id, "error: Recipe does not exist!")
               
     return jsonify({
          'recipe': recipe.to_dict(),
@@ -141,7 +144,7 @@ def update_recipe(recipe_id):
      if not data:
           return jsonify({'error':'No data provided'}), 400
 
-     recipe = Recipe.query.get_or_404(recipe_id)
+     recipe = Recipe.query.get_or_404(recipe_id, "error: recipe does not exist!")
      if recipe.submitted_by != user_id:
           return jsonify({'error': 'User did not create recipe.'}), 403
 
@@ -173,7 +176,7 @@ def update_recipe(recipe_id):
 @recipes_db.route('/recipes/<int:recipe_id>', methods=['DELETE'])
 # @login_required
 def delete_recipe(recipe_id):
-     recipe = Recipe.query.get_or_404(recipe_id)
+     recipe = Recipe.query.get_or_404(recipe_id, "error: recipe does not exist!")
      user_id = current_user.id if current_user.is_authenticated else 67
 
      if user_id != recipe.submitted_by:
