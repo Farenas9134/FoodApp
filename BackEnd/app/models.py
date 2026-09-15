@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 
+from werkzeug.security import generate_password_hash, check_password_hash
+
 class Relationships(db.Model):
     __tablename__ = 'Relationships'
 
@@ -81,6 +83,12 @@ class User(UserMixin, db.Model):
         query = sa.select(sa.func.count()).select_from(
             self.following.select().subquery())
         return db.session.scalar(query)
+
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
 
 
 class Ingredient(db.Model):

@@ -32,7 +32,8 @@ def signup_post():
         }), 400
 
     # create new user. Hash password so plaintext version never stored
-    new_user = User(email=email, name=name, password=generate_password_hash(password))
+    new_user = User(email=email, name=name)
+    new_user.set_password(password)
 
     # add user to db
     db.session.add(new_user)
