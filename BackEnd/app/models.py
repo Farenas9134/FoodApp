@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 
+from werkzeug.security import generate_password_hash, check_password_hash
+
 class Relationships(db.Model):
     __tablename__ = 'Relationships'
 
@@ -82,6 +84,12 @@ class User(UserMixin, db.Model):
             self.following.select().subquery())
         return db.session.scalar(query)
 
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
+
 
 class Ingredient(db.Model):
     __tablename__ = 'ingredient'
@@ -99,6 +107,9 @@ class Ingredient(db.Model):
     is_verified = db.Column(db.Boolean, default=False, nullable = False)
     created_by = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=True)
 
+    # Soft deletion of ingredients but still want it to be referenced by recipes
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False, server_default=sa.text('0'))
+
     # Detailed micronutrients
     # Figure out later, focus on macros
     # micronutrients = db.Column(db.JSON, default=dict)
@@ -112,15 +123,20 @@ class Ingredient(db.Model):
 
     @classmethod
     def get_visible_for_user(cls, user_id):
-        "Returns all global ingredients + custom ingredients created by user"
-        stmt = sa.select(cls).where(
-            sa.or_(
-                cls.is_verified == True,
-                cls.created_by == user_id
-            )
-        )
+        """Returns a SQLAlchemy Select statement for visible ingredients"""
+        stmt = sa.select(cls).where(cls.is_deleted == False)
 
-        return db.session.scalars(stmt.all())
+        if user_id is not None:
+            stmt = stmt.where(
+                sa.or_(
+                    cls.is_verified == True,
+                    cls.created_by == user_id
+                )
+            )
+        else:
+            stmt = stmt.where(cls.is_verified == True)
+
+        return stmt.order_by(cls.name)
 
 class RecipeIngredient(db.Model):
     __tablename__ = "RecipeIngredient"

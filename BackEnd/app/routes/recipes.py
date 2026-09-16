@@ -39,7 +39,7 @@ def submit_recipe():
             return jsonify({"error": "Recipe already exists in our database!"}), 400
 
     # For testing purposes, aka when @login_required commented out
-    user_id = current_user.id if current_user.is_authenticated else 67
+    user_id = current_user.user_id if current_user.is_authenticated else 67
 
     # Grab all attrs in Recipe relation, removing auto generated field submission
     valid_fields = set(Recipe.__table__.columns.keys()) - {'recipe_id', 'created_at', 'last_updated'}
@@ -177,7 +177,7 @@ def update_recipe(recipe_id):
 # @login_required
 def delete_recipe(recipe_id):
      recipe = Recipe.query.get_or_404(recipe_id, "error: recipe does not exist!")
-     user_id = current_user.id if current_user.is_authenticated else 67
+     user_id = current_user.user_id if current_user.is_authenticated else 67
 
      if user_id != recipe.submitted_by:
           return jsonify({'error': 'User did not submit this recipe. Cannot delete it.'}), 401
