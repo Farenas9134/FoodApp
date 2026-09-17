@@ -6,15 +6,21 @@ from flask_admin.contrib.sqla import ModelView
 # What is CORS? https://www.geeksforgeeks.org/python/how-to-install-flask-cors-in-python/
 from flask_cors import CORS
 
-def create_app():
+def create_app(test_config=None):
     app = Flask(__name__)
     # update methods as neeeded,
     CORS(app, supports_credentials=True, methods=["GET", "POST"])
 
-    # Configuration
+    # Defualt Configuration
     app.config['SECRET_KEY'] = 'super-secret-key'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
+
+    # == = = = = = = = = = = = = = =
+    # Override defaults if for testing purposes
+    if test_config is not None:
+        app.config.update(test_config)
+    # = = = = = = = = = = = = = = = 
 
     # Initialize extensions with app
     db.init_app(app)
