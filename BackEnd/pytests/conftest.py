@@ -80,12 +80,17 @@ def test_client(app):
 @pytest.fixture()
 def make_user():
     """Function-scoped factory so users exist for duration of current test"""
-    def _make_user(name='pytester', email='pytests0@gmail.com'):
+    def _make_user(name='user', email='easy@email.com', password = 'easy'):
         user = User(name=name, email=email)
-        user.set_password('FlaskIsAwesome')
+        user.set_password(password)
         # Populates defaults like user_id and is_admin
         db.session.add(user)
         db.session.flush()
 
         return user
     return _make_user
+
+# @pytest.fixture()
+# def make_recipe():
+#     """Function-scoped factory for recipes"""
+#     def _make_recipe()

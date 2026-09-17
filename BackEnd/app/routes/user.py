@@ -13,8 +13,8 @@ user_bp = Blueprint('user', __name__)
 @login_required
 def get_user():
     return jsonify({
-        'hello':f'hello user number {current_user.user_id}'
-    })
+        'message':f'hello {current_user.name}! Your id is {current_user.user_id}'
+    }), 200
 
 @user_bp.route('/user/recipes', methods=['GET'])
 @login_required

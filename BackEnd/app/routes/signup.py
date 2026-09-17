@@ -9,14 +9,14 @@ signup_db = Blueprint('signup', __name__)
 @signup_db.route('/signup', methods=['POST'])
 def signup_post():
 
-    data = request.get_json()
+    data = request.get_json(silent=True)
 
-    if not data: 
-        return jsonify({"error": "Missing JSON body"}), 400
+    if not isinstance(data, dict): 
+        return jsonify({"error": "Request body must be valid JSON"}), 400
 
-    email = data["email"]
-    name = data["name"]
-    password = data["password"]
+    email = data.get("email")
+    name = data.get("name")
+    password = data.get("password")
 
     if not email or not password or not name:
         return jsonify({

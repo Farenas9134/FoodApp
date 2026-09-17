@@ -21,13 +21,13 @@ def login_post():
 
     data = request.get_json()
 
-    if not data: 
+    if not isinstance(data, dict): 
         return jsonify({
-            "error": "Missing JSON body"
+            "error": "Request body must be valid JSON"
         }), 400
 
-    email = data["email"]
-    password = data["password"]
+    email = data.get("email")
+    password = data.get("password")
     # Check whether or not user wants to be remembered and not have to login again when reopening page
     # remember = bool(request.form.get('remember'))
 

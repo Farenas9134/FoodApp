@@ -1,31 +1,36 @@
 from app.models import User
 
-def test_new_user(test_client, make_user):
+def test_user_homepage(test_client, make_user):
     '''
-    GIVEN a User model
-    WHEN a new User is created
-    THEN check the email, hashed password, and attached fields are defined correctly
+    GIVEN a logged in user
+    WHEN a visits their homepage
+    THEN recieve a hello message
     '''
-    new_user = make_user(name='user1', email='user1@gmail.com')
-    assert new_user.name == 'user1'
-    assert new_user.email == 'user1@gmail.com'
-    assert new_user.password != 'FlaskIsAwesome'
-    assert new_user.check_password('FlaskIsAwesome')
-    assert new_user.is_admin == False
+    make_user(name='PyTester', email="easy@email.com", password="Pie")
+    login_info = {"email":"easy@email.com", "password":"Pie"}
+    login_response = test_client.post('/login', json=login_info)
+    assert login_response.status_code == 201
 
-def test_sign_up(test_client):
+    response = test_client.get('/user')
+    assert response.status_code == 200
+    assert 'hello PyTester' in response.json['message']
+
+def test_user_recipes(test_client, make_user):
     """
-    GIVEN data for a new User
-    WHEN a user wants to sign up
-    THEN a new User instance is created
+    GIVEN a user with saved recipes
+    WHEN accessing a user's saved recipes page
+    THEN display said user's recipes
+
+    NOTE: Just tests if route runs through code. Whether recipes show correctly is not tested
     """
-    data = {
-        "name": "manualUser",
-        "email": "testing@gmail.com",
-        "password": "passwordsrule"
-    }
+    make_user()
+    login_info = {"email":"easy@email.com", "password":"easy"}
+    login_res = test_client.post('/login', json=login_info)
 
-    response = test_client.post('/signup', json=data)
+    assert login_res.status_code == 201
 
-    assert response.status_code == 201
-    assert response.json['message'] == 'User created successfully'
+    res = test_client.get('/user/recipes')
+
+    assert res.status_code == 200
+    assert 'total' in res.json
+    assert 'saved recipes' in res.json
