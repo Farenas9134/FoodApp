@@ -63,7 +63,11 @@ def submit_recipe():
                # Not a field that requires special handling, just add to Recipe (title, source_url, etc.)
                else:
                     setattr(new_recipe, field, value)
-          
+
+          # If no ingredients parsed, recipe cannot be created
+          if len(ingredients_parsed) == 0:
+               raise ValueError("Recipe must have at least one ingredient.")
+
           db.session.add(new_recipe)
           db.session.flush()
 
@@ -142,7 +146,7 @@ def get_recipes():
         )
 
     return jsonify({
-         'recipe': [recipe.to_dict(2) for recipe in pagination.items],
+         'recipes': [recipe.to_dict(2) for recipe in pagination.items],
          'total': pagination.total,
          'pages': pagination.pages,
          'current_page': page,
@@ -204,9 +208,9 @@ def search_recipes():
 
 
 @recipes_db.route('/recipes/<int:recipe_id>', methods=['PUT'])
-# @login_required
+@login_required
 def update_recipe(recipe_id):
-     user_id = current_user.id if current_user.is_authenticated else 67
+     user_id = current_user.id if current_user.is_authenticated else 1
      data = request.get_json()
 
      if not data:
