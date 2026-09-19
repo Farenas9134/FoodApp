@@ -27,6 +27,7 @@ recipe_json = 'testing/recipes-main/recipes.json'
 RECIPES_TO_ADD = 5
 
 def safe_parse_amounts(raw_quantity):
+    
     'Converts quantity to float. Returns amount, extra_notes'
     if not raw_quantity:
         return 1.0, ''

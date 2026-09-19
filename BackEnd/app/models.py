@@ -6,6 +6,8 @@ from . import db
 from flask_login import UserMixin
 from datetime import datetime, timezone
 import sqlalchemy as sa
+
+from sqlalchemy import UniqueConstraint
 import sqlalchemy.orm as so
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -95,7 +97,7 @@ class Ingredient(db.Model):
     __tablename__ = 'ingredient'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), nullable=False, unique=True)
 
     # Core macros
     calories = db.Column(db.Float, nullable=False, default=0.0)
@@ -141,8 +143,11 @@ class Ingredient(db.Model):
 class RecipeIngredient(db.Model):
     __tablename__ = "RecipeIngredient"
 
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.recipe_id', ondelete='CASCADE'), primary_key=True)
-    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredient.id', ondelete='CASCADE'), primary_key=True)
+    # Standalone pk so we can have multiple instances of one ingredient
+    recipe_ingredient_id = db.Column(db.Integer, primary_key=True)
+
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.recipe_id', ondelete='CASCADE'), nullable=False)
+    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredient.id', ondelete='CASCADE'), nullable=False)
 
     amount = db.Column(db.Float, nullable=False, default=0.0)
     unit = db.Column(db.String(50), nullable=False, default='')
@@ -156,6 +161,7 @@ class RecipeIngredient(db.Model):
         data = self.ingredient.to_dict() if self.ingredient else {}
 
         # Add recipe specific details
+        data['recipe_ingredient_id'] = self.recipe_ingredient_id
         data['amount'] = self.amount
         data['unit'] = self.unit
         data['notes'] = self.notes
@@ -189,6 +195,16 @@ class Recipe(db.Model):
         passive_deletes=True
     )
 
+    # Composite Unique Constraint: 
+    # - user_id + title combination MUST be unique AND
+    # - url MUST be unique
+    __table_args__ = (
+            # Checks: Is this source_url already in the database?
+            UniqueConstraint('source_url', name='uq_recipes_source_url'),
+            
+            # Checks: Has this user already used this title?
+            UniqueConstraint('submitted_by', 'title', name='uq_user_recipe_title'),
+        )
         
     def to_dict(self, mode=1):
         data = {}

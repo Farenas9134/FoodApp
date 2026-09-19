@@ -3,60 +3,128 @@ from flask_login import login_required, current_user
 from sqlalchemy import select
 from datetime import datetime, timezone, timedelta
 
-from ..models import Recipe
+from ..models import Recipe, Ingredient, RecipeIngredient
 from ..extensions import db
+from ingredient_parser import parse_ingredient
 
 recipes_db = Blueprint('recipes', __name__)
 
-# NEEDS UPDATING FOR RECIPE INGREDIENT OVERHUAL
-# EXAMPLE/GUIDE IN STAPLE TESTING FILE
-# NEED TO CREATE INGREDIENT ELEMENTS IF NOT EXISTINGG AND THEN ADD AS A RECIPE_INGREDIENT
+def safe_parse_amounts(raw_quantity):
+    'Converts quantity to float. Returns amount, extra_notes'
+    if not raw_quantity:
+        return 1.0, ''
+    try:
+        return float(raw_quantity), ""
+    except (ValueError, TypeError):
+        # Parse_ingredient() likely returned non-numeric string as the amount
+        return 1.0, str(raw_quantity)
+
 @recipes_db.route('/recipes-submit', methods=["POST"])
-# @login_required
+@login_required
 def submit_recipe():
-    data = request.get_json()
-    if not data: 
-        return jsonify({"error": "Missing JSON body"}), 400
+     data = request.get_json()
 
-    required_fields = [
-        "title", "source_url", "source_platform",
-        "recipe_ingredients", "instructions", "image_url", "created_by"
-    ]
+     if not isinstance(data, dict): 
+          return jsonify({"error": "Request body must be valid JSON"}), 400
 
-    missing = []
-    for field in required_fields:
-        if field not in data:
-            missing.append(field)
+     required_fields = set(Recipe.__table__.columns.keys()) - {
+          'recipe_id',
+          'created_at',
+          'last_updated',
+          'submitted_by'
+     } | {'recipe_ingredients'}
 
-    if missing:
-        return jsonify({"error": "Missing required fields", "missing": missing}), 401
+     missing = []
+     for field in required_fields:
+          if field not in data:
+               missing.append(field)
 
-    # Apparently modern 2.0 way to check for duplicate data
-    stmt = select(Recipe).filter_by(title=data["title"], source_url=data["source_url"])
-    existing_recipe = db.session.scalars(stmt).first()
+     if missing:
+          return jsonify({"error": "Missing required fields", "Missing": missing}), 400
 
-    if existing_recipe:
-            return jsonify({"error": "Recipe already exists in our database!"}), 400
+     user_id = current_user.user_id if current_user.is_authenticated else 1
 
-    # For testing purposes, aka when @login_required commented out
-    user_id = current_user.user_id if current_user.is_authenticated else 67
+     # Attempt to add recipe to DB
+     try:
+          # Insantiate recipe instance
+          new_recipe = Recipe(submitted_by=user_id)
+          ingredients_parsed = []
 
-    # Grab all attrs in Recipe relation, removing auto generated field submission
-    valid_fields = set(Recipe.__table__.columns.keys()) - {'recipe_id', 'created_at', 'last_updated'}
+          for field,value in data.items():
+               # Only work with valid fields
+               if field not in required_fields: continue
+               # Check each ingredient to see if Ingredient record needs to be made
+               if field == 'recipe_ingredients':
+                    # For each ingredient in the list of ingredients
+                    for item in value:
+                         ingredient_info = parse_ingredient(item)
+                         ingredients_parsed.append(ingredient_info)
 
-    new_recipe = Recipe(submitted_by=user_id)
+               # Not a field that requires special handling, just add to Recipe (title, source_url, etc.)
+               else:
+                    setattr(new_recipe, field, value)
+          
+          db.session.add(new_recipe)
+          db.session.flush()
 
-    for field,value in data.items():
-         if field in valid_fields:
-              setattr(new_recipe, field, value)
+          # Local ingredient cache to prevent Ingredient duplicates due to temp. flushes
+          local_ingredient_cache = {}
 
-    db.session.add(new_recipe)
-    db.session.commit()
+          # If successful, then run through each ingredient
+          for ing in ingredients_parsed:
+               # Ingredient parser did not assign a name
+               if not ing.name: continue
+               # Grab ing info based on parse_ingredient output format
+               ing_name = ing.name[0].text.lower()
+               ing_raw_qty = ing.amount[0].quantity if len(ing.amount) == 1 else 0
+               ing_amount, ing_notes = safe_parse_amounts(ing_raw_qty)
+               ing_unit = str(ing.amount[0].unit) if len(ing.amount) == 1 else ''
+               ing_base_comment = ing.comment.text if ing.comment else ''
+               # Merge comments and any notes if any
+               ing_comment = f"{ing_notes} {ing_base_comment}".strip()
 
-    return jsonify({
-        "message":"Recipe created successfully",
-        "recipe": new_recipe.to_dict()
-    }), 201
+               # Check local cache first
+               new_ing = local_ingredient_cache.get(ing_name)
+
+               # Then check if existing ingredient record exists first
+               if not new_ing:
+                    new_ing = Ingredient.query.filter_by(name=ing_name).first()
+
+               # If completely new ingredient, create new record
+               # other details are left to default for now
+               if not new_ing:
+                    new_ing = Ingredient(name=ing_name, created_by=user_id)
+                    db.session.add(new_ing)
+                    # Adds instance in limbo state, not a full commit. Flush needed to assign an id
+                    db.session.flush()
+
+               local_ingredient_cache[ing_name] = new_ing
+
+               # Add RecipeIngredient record to link ing to recipe
+               recipe_ingredient = RecipeIngredient(
+                    recipe_id = new_recipe.recipe_id,
+                    ingredient_id = new_ing.id,
+                    amount = ing_amount,
+                    unit = ing_unit,
+                    notes = ing_comment
+               )
+               db.session.add(recipe_ingredient)
+
+          # If all runs smooth, full commit it all
+          db.session.commit()
+
+     except Exception as e:
+          db.session.rollback()
+          return jsonify({
+               "error":"Failed to create recipe. Duplicate entry or invalid data.",
+               "details":str(e)
+          }), 400
+
+     # Everything went well, return success message
+     return jsonify({
+          "message":"Recipe created successfully",
+          "recipe": new_recipe.to_dict()
+     }), 201
 
 @recipes_db.route('/recipes', methods=["GET"])
 def get_recipes():

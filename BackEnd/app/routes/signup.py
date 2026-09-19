@@ -23,21 +23,30 @@ def signup_post():
             "error":"Missing required fields"
         }), 400
 
-    stmt = select(User).filter_by(email=email)
-    existing_user = db.session.scalars(stmt).first()
+    """
+        Doing a Select query everytime can be slow & lead to a "race" where user's A & B submit
+        a request at the same time, and they both get hit with a blank page.
+        Solution: Attempt to commit without the check, and if an error is thrown, just rollback. A unique constraint is crucial for this to work
+    """
+    # stmt = select(User).filter_by(email=email)
+    # existing_user = db.session.scalars(stmt).first()
 
-    if existing_user:
-        return jsonify({
-            "error": "Email attached to existing user."
-        }), 400
+    # if existing_user:
+    #     return jsonify({
+    #         "error": "Email attached to existing user."
+    #     }), 400
 
     # create new user. Hash password so plaintext version never stored
     new_user = User(email=email, name=name)
     new_user.set_password(password)
 
     # add user to db
-    db.session.add(new_user)
-    db.session.commit()
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+    except:
+        db.session.rollback()
+        return jsonify({"error": "Email attached to existing user."}), 400
 
     # return successful json message
     return jsonify({

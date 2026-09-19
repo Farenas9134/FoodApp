@@ -1,4 +1,3 @@
-from app.models import User
 
 def test_user_homepage(test_client, make_user):
     '''
