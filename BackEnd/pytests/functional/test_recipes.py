@@ -1,6 +1,11 @@
 from app import create_app, recipe_extraction
 import pytest
 
+'''
+From the BackEnd directory
+
+python -m pytest
+'''
 def test_get_recipes_with_fixture(test_client):
     """
     GIVEN a FLASK application configured for testing
@@ -12,6 +17,9 @@ def test_get_recipes_with_fixture(test_client):
     assert b"current_page" in response.data
     assert b"recipe" in response.data
 
+
+# NOT WORKING CURRENTLY, THE MODEL NEEDS UPDATING TO HANDLE LISTS OF TAGS #
+# KNOWN TO BE BROKEN #
 def test_extraction_and_submit_recipe(test_client, make_user):
     """
     Testing recipe extraction from a URL and then submitting the recipe to the database
