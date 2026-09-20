@@ -35,7 +35,7 @@ def test_extraction_and_submit_recipe(test_client, make_user):
     response = test_client.post('/recipes-submit', json=recipe)
     assert response.status_code == 201, f"Route failed with response {response.get_data(as_text=True)}"
     assert 'Recipe created successfully' in response.json['message']
-    assert 'Cookies' in response.json['recipe']['title']
+    assert 'Steak and Cilantro Rice' in response.json['recipe']['title']
 
 def test_submit_recipe(test_client, make_user):
     """
@@ -69,7 +69,8 @@ def test_submit_recipe(test_client, make_user):
             '½ teaspoon baking powder',
             '1 teaspoon sea salt',
             '2 cups chocolate chips (12 oz)'
-        ]
+        ],
+        'nutrients': {'calories': '850 Calories', 'fatContent': '22 g', 'saturatedFatContent': '7 g'}
     }
 
     # Submit recipe
