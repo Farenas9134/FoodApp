@@ -178,16 +178,15 @@ class Recipe(db.Model):
     __tablename__ = "recipes"
 
     # ATTRS TO ADD FOR RECIPE EXTRACTION #
-    # tags = db.Column(db.JSON, nullable=FALSE) -> update existing tags variable, needs to handle list of strings
-    # nutrients = db.Column(db.JSON, nullable=FALSE) -> nutrients of the entire recipe
-    # description = db.Column(db.String(1000), nullable=False) -> short description of a recipe, sometimes they suck lol
-    # cook_time = db.Column(db.Integer, nullable=True) -> sometimes the cooktime is not there so nullable is ok
-    # prep_time = db.Column(db.Integer, nullable=True) -> same as cooktime
-    # total_time = db.Column(db.Integer, nullable=True) -> you know the drill
+    nutrients = db.Column(db.JSON, default=list) # -> nutrients of the entire recipe
+    description = db.Column(db.String(1000), default='') # -> short description of a recipe, sometimes they suck lol
+    cook_time = db.Column(db.Integer, default=0) # -> sometimes the cooktime is not there so nullable is ok
+    prep_time = db.Column(db.Integer, default=0) # -> same as cooktime
+    total_time = db.Column(db.Integer, default=0) # -> you know the drill
     # Don't know which of the previous 3 are more useful so putting all of them
-    # category = db.Column(db.String(100), nullable=False) -> tells whether a recipe is a main course, appetizer, dessert, etc.
-    # rating = db.Column(db.Float, nullable=False) -> rating of recipe out of 5 stars
-    # servings = db.Column(db.String(100), nullable=False) -> how many servings the recipe makes
+    category = db.Column(db.String(100), default='') # -> tells whether a recipe is a main course, appetizer, dessert, etc.
+    rating = db.Column(db.Float, default=0.0) # -> rating of recipe out of 5 stars
+    servings = db.Column(db.String(100), default='') # -> how many servings the recipe makes
 
     # FOR SOME OF THESE IM HONESTLY NOT SURE IF nullable=True OR nullable=False MAKES THE MOST SENSE
     
@@ -197,7 +196,8 @@ class Recipe(db.Model):
     source_platform = db.Column(db.String(100), nullable=False)
     instructions = db.Column(db.JSON, nullable=False)
     image_url = db.Column(db.String(1000), nullable=False, default=list)
-    tags = db.Column(db.String(100))
+    # Update tags after setting new attrs
+    tags = db.Column(db.JSON, default={})
     submitted_by = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
     # if we create an account for each 'influencer' we can have a table for them
     created_by = db.Column(db.String(100), nullable=False)
