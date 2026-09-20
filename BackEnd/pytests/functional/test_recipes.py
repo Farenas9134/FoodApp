@@ -1,4 +1,4 @@
-from app import create_app
+from app import create_app, recipe_extraction
 import pytest
 
 def test_get_recipes_with_fixture(test_client):
@@ -11,6 +11,23 @@ def test_get_recipes_with_fixture(test_client):
     assert response.status_code == 200
     assert b"current_page" in response.data
     assert b"recipe" in response.data
+
+def test_extraction_and_submit_recipe(test_client, make_user):
+    """
+    Testing recipe extraction from a URL and then submitting the recipe to the database
+    """
+    make_user()
+    login_info = {"email":"easy@email.com", "password":"easy"}
+    login_response = test_client.post('/login', json=login_info)
+    assert login_response.status_code == 201
+
+    recipe = recipe_extraction.extract_recipe("https://www.americastestkitchen.com/recipes/16181-ancho-rubbed-flank-steak-and-cilantro-rice-with-avocado-sauce")
+
+    # Submit recipe
+    response = test_client.post('/recipes-submit', json=recipe)
+    assert response.status_code == 201, f"Route failed with response {response.get_data(as_text=True)}"
+    assert 'Recipe created successfully' in response.json['message']
+    assert 'Cookies' in response.json['recipe']['title']
 
 def test_submit_recipe(test_client, make_user):
     """
