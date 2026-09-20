@@ -176,6 +176,20 @@ class UserPantry(db.Model):
 class Recipe(db.Model):
     # sets name of db table in SQLite
     __tablename__ = "recipes"
+
+    # ATTRS TO ADD FOR RECIPE EXTRACTION #
+    # tags = db.Column(db.JSON, nullable=FALSE) -> update existing tags variable, needs to handle list of strings
+    # nutrients = db.Column(db.JSON, nullable=FALSE) -> nutrients of the entire recipe
+    # description = db.Column(db.String(1000), nullable=False) -> short description of a recipe, sometimes they suck lol
+    # cook_time = db.Column(db.Integer, nullable=True) -> sometimes the cooktime is not there so nullable is ok
+    # prep_time = db.Column(db.Integer, nullable=True) -> same as cooktime
+    # total_time = db.Column(db.Integer, nullable=True) -> you know the drill
+    # Don't know which of the previous 3 are more useful so putting all of them
+    # category = db.Column(db.String(100), nullable=False) -> tells whether a recipe is a main course, appetizer, dessert, etc.
+    # rating = db.Column(db.Float, nullable=False) -> rating of recipe out of 5 stars
+    # servings = db.Column(db.String(100), nullable=False) -> how many servings the recipe makes
+
+    # FOR SOME OF THESE IM HONESTLY NOT SURE IF nullable=True OR nullable=False MAKES THE MOST SENSE
     
     recipe_id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
