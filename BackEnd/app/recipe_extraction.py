@@ -19,14 +19,22 @@ def extract_recipe(link):
     Want a recipe in the following format
 
     recipe = {
-        'title': '<title>',
-        'source_url': '<url>',
-        'source_platform': '<platform>',
-        'instructions': '<list_of_instructions>',
-        'image_url': '<image_url>',
-        'tags': '<tags>',
-        'created_by':'<author>',
-        'recipe_ingredients': '<list_of_ingredients>'
+        'title': '<title>', -> string
+        'source_url': '<url>', -> string
+        'source_platform': '<platform>', -> string
+        'instructions': '<instructions>', -> list/dictionary
+        'image_url': '<image_url>', -> string
+        'tags': '<tags>', -> list
+        'created_by':'<author>', -> string
+        'recipe_ingredients': '<ingredients>', -> list/dictionary
+        'nutrients': '<nutrients>', -> list/dictionary
+        'description': '<description>', -> string
+        'cook_time': '<time (in minutes)>', -> int
+        'prep_time': '<time (in minutes)>', -> int
+        'total_time': '<time (in minutes)>', -> int
+        'category': '<category>', -> string
+        'rating': '<rating>', -> float
+        'servings': '<servings>' -> string
     }
     '''
 
@@ -44,7 +52,15 @@ def extract_recipe(link):
     tags = scraper.keywords()
     author = scraper.author()
     ing_list = scraper.ingredients()
-    print("TEST", scraper.canonical_url())
+    nutrients = scraper.nutrients()
+    description = scraper.description()
+    total_time = scraper.total_time()
+    category = scraper.category()
+    rating = scraper.ratings()
+    servings = scraper.yields()
+
+    print("TEST", nutrients)
+    
     recipe = {
         'title': title,
         'source_url': source_url,
@@ -53,7 +69,13 @@ def extract_recipe(link):
         'image_url': image,
         'tags': tags,
         'created_by': author,
-        'recipe_ingredients': ing_list
+        'recipe_ingredients': ing_list,
+        'nutrients': nutrients,
+        'description': description,
+        'total_time': total_time,
+        'category': category,
+        'rating': rating,
+        'servings': servings
     }    
 
     return recipe

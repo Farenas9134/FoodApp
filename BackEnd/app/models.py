@@ -180,9 +180,7 @@ class Recipe(db.Model):
     # ATTRS TO ADD FOR RECIPE EXTRACTION #
     nutrients = db.Column(db.JSON, default=list) # -> nutrients of the entire recipe
     description = db.Column(db.String(1000), default='') # -> short description of a recipe, sometimes they suck lol
-    cook_time = db.Column(db.Integer, default=0) # -> sometimes the cooktime is not there so nullable is ok
-    prep_time = db.Column(db.Integer, default=0) # -> same as cooktime
-    total_time = db.Column(db.Integer, default=0) # -> you know the drill
+    total_time = db.Column(db.Integer, default=0) # -> including prep and cooking
     # Don't know which of the previous 3 are more useful so putting all of them
     category = db.Column(db.String(100), default='') # -> tells whether a recipe is a main course, appetizer, dessert, etc.
     rating = db.Column(db.Float, default=0.0) # -> rating of recipe out of 5 stars
