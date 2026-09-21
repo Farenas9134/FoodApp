@@ -70,7 +70,14 @@ def test_submit_recipe(test_client, make_user):
             '1 teaspoon sea salt',
             '2 cups chocolate chips (12 oz)'
         ],
-        'nutrients': {'calories': '850 Calories', 'fatContent': '22 g', 'saturatedFatContent': '7 g'}
+        'nutrients': {'calories': '850 Calories', 'fatContent': '22 g', 'saturatedFatContent': '7 g',
+                      'transFatContent': '0 g', 'cholesterolContent': '50 mg', 'sodiumContent': '70 mg', 
+                      'carbohydrateContent': '15 g', 'fiberContent': '7 g', 'sugarContent': '21 g', 'proteinContent': '67 g'},
+        'description': 'Yummy cookies',
+        'total_time': 65,
+        'category': 'Dessert',
+        'rating': 4.2,
+        'servings': '3 servings'
     }
 
     # Submit recipe
@@ -108,7 +115,15 @@ def test_same_recipe_title(make_recipe):
         'image_url': 'test.com',
         'tags': 'test',
         'created_by':'Pytest',
-        'recipe_ingredients': [] 
+        'recipe_ingredients': [],
+        'nutrients': {'calories': '850 Calories', 'fatContent': '22 g', 'saturatedFatContent': '7 g',
+                      'transFatContent': '0 g', 'cholesterolContent': '50 mg', 'sodiumContent': '70 mg', 
+                      'carbohydrateContent': '15 g', 'fiberContent': '7 g', 'sugarContent': '21 g', 'proteinContent': '67 g'},
+        'description': 'Yummy cookies',
+        'total_time': 65,
+        'category': 'Dessert',
+        'rating': 4.2,
+        'servings': '3 servings' 
         }, 400, "Failed to create recipe")
 ])
 def test_recipe_submit_edge_cases(test_client, data, expected_status, expected_error, make_user):

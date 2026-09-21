@@ -74,6 +74,14 @@ def make_recipe(test_client, make_user):
             '2 cups chocolate chips (12 oz)'
         ],
         user_email = "easy2@gmail.com",
+        nutrients = {'calories': '850 Calories', 'fatContent': '22 g', 'saturatedFatContent': '7 g',
+                      'transFatContent': '0 g', 'cholesterolContent': '50 mg', 'sodiumContent': '70 mg', 
+                      'carbohydrateContent': '15 g', 'fiberContent': '7 g', 'sugarContent': '21 g', 'proteinContent': '67 g'},
+        description = 'Yummy cookies',
+        total_time = 65,
+        category = 'Dessert',
+        rating = 4.2,
+        servings = '3 servings'
     ):
         make_user(email=user_email, password="easy")
         login_info = {"email":user_email, "password":"easy"}
@@ -87,7 +95,13 @@ def make_recipe(test_client, make_user):
             'image_url': image_url,
             'tags': tags,
             'created_by': created_by,
-            'recipe_ingredients': recipe_ingredients
+            'recipe_ingredients': recipe_ingredients,
+            'nutrients': nutrients,
+            'description': description,
+            'total_time': total_time,
+            'category': category,
+            'rating': rating,
+            'servings': servings
         }
 
         response = test_client.post('/recipes-submit', json=recipe_data)
