@@ -161,7 +161,7 @@ def get_recipe_by_id(recipe_id):
               
     return jsonify({
          'recipe': recipe.to_dict(),
-         'ingredients': recipe.get_ingredients()
+         'ingredients': recipe.get_ingredients_print()
     }), 200
 
 @recipes_db.route('/recipes/search', methods=['GET'])
@@ -210,46 +210,134 @@ def search_recipes():
 @recipes_db.route('/recipes/<int:recipe_id>', methods=['PUT'])
 @login_required
 def update_recipe(recipe_id):
-     user_id = current_user.id if current_user.is_authenticated else 1
+     user_id = current_user.user_id
      data = request.get_json()
 
-     if not data:
-          return jsonify({'error':'No data provided'}), 400
+     if not isinstance(data, dict):
+          return jsonify({'error':'Request body must be valid JSON'}), 400
 
      recipe = Recipe.query.get_or_404(recipe_id, "error: recipe does not exist!")
+
      if recipe.submitted_by != user_id:
           return jsonify({'error': 'User did not create recipe.'}), 403
 
-     mutable_recipe_fields = set(Recipe.__table__.columns.keys()) - {'recipe_id', 'created_at', 'last_updated'}
-     
-     try:
-        for field, value in data.items():
-            if field in mutable_recipe_fields:
-                # Check for duplicates on prev. unique fields in Recipe class
-                if field in ('title', 'source_url'):
-                        stmt = select(Recipe).where(
-                             getattr(Recipe, field) == value,
-                             Recipe.recipe_id != recipe_id
-                        )
-                        existing = db.session.scalars(stmt).first()
-                        if existing:
-                            return jsonify({'error':f'{field.replace("_"," ").title()} already taken'}), 400
-                # Set field attribute to recipe
-                setattr(recipe, field, value)
-        setattr(recipe, 'last_updated', datetime.now(timezone.utc))
+     mutable_recipe_fields = set(Recipe.__table__.columns.keys()) - {'recipe_id', 'created_at', 'last_updated'} | {'recipe_ingredients'}
 
-        db.session.commit()
-        return jsonify({'Success': 'Successfully changed the recipe!', 'recipe': recipe.to_dict()}), 200
-     
+     try:
+          for field, value in data.items():
+               if field in mutable_recipe_fields:
+                    # If updating ingredients, then handle differently
+                    # Update recipeIngredients only, not Ingredient records
+                    """
+                    Will assume format is as follows:
+                    'recipe_ingredients:
+                         [
+                         {'name':'chicken', 'unit': value, 'amount': value},
+                         {'new_ing':...}
+                         ]
+                    '"""
+                    if field == 'recipe_ingredients':
+                         # fetch current recipeIngredients for this recipe
+                         current_ris = RecipeIngredient.query.filter_by(recipe_id=recipe.recipe_id).all()
+                         # Create dict to easily grab existing ings. by name
+                         current_ri_map = {}
+                         for ri in current_ris:
+                              if ri.ingredient:
+                                   current_ri_map[ri.ingredient.name] = ri
+                         # Keep track of what we've processed so we knoew what to delete later
+                         seen_ingredient_names = set()
+
+                         # Go through each ing
+                         for ing in value:
+                              # Grab info
+                              ing_name = ing.get('name')
+                              amount = ing.get('amount')
+                              unit = ing.get('unit')
+
+                              # If no name provided, can't do anything
+                              if not ing_name: continue
+
+                              # standardize name for matching
+                              ing_name = ing_name.strip().lower()
+                              seen_ingredient_names.add(ing_name)
+
+                              # Check if base ing exists in DB
+                              base_ing = Ingredient.query.filter_by(name=ing_name).first()
+
+                              # Handle missing or soft-deleted ingredients
+                              if not base_ing:
+                                   # Create new record if DNE
+                                   base_ing = Ingredient(name=ing_name, created_by=user_id)
+                                   db.session.add(base_ing)
+                                   db.session.flush()
+                              elif base_ing.is_deleted:
+                                   base_ing.is_deleted = False
+
+                              # Update or Create RecipeIngredient Links
+                              if ing_name in current_ri_map:
+                                   exisiting_ri = current_ri_map[ing_name]
+                                   if amount is not None:
+                                        exisiting_ri.amount = amount
+                                   if unit is not None:
+                                        exisiting_ri.unit = unit
+
+                              else:
+                                   new_ri = RecipeIngredient(
+                                        recipe_id = recipe.recipe_id,
+                                        ingredient_id = base_ing.id,
+                                        amount = amount,
+                                        unit = unit
+                                   )
+                                   db.session.add(new_ri)
+
+                         # Remove recipeIngredient records that were removed
+                         # AKA ingredients NOT included in list of given ings
+                         for old_name, old_ri in current_ri_map.items():
+                              if old_name not in seen_ingredient_names:
+                                   db.session.delete(old_ri)
+                         continue
+               
+                    # Grab expected python type for field's value in Recipe model
+                    expected_type = Recipe.__table__.columns[field].type.python_type
+
+                    # Check if given update value is appropriate
+                    if value is not None and not isinstance(value, expected_type):
+                         return jsonify({
+                              "error":f"Invalid data type for '{field}'. Expected {expected_type.__name__}, got {type(value).__name__} instead."
+                         }), 400
+
+                    # Check for duplicates on prev. unique fields in Recipe class
+                    if field in ('title', 'source_url'):
+                         stmt = select(Recipe).where(
+                              getattr(Recipe, field) == value,
+                              Recipe.recipe_id != recipe_id
+                         )
+                         existing = db.session.scalars(stmt).first()
+                         if existing:
+                              return jsonify({'error':f'{field.replace("_"," ").title()} already taken'}), 400
+
+                    # Else, just set field attribute to recipe
+                    setattr(recipe, field, value)
+
+          # Update timestamp
+          setattr(recipe, 'last_updated', datetime.now(timezone.utc))
+
+          db.session.commit()
+          return jsonify(
+               {'Success': 'Successfully changed the recipe!',
+                'recipe': recipe.to_dict(),
+                'ingredients': recipe.get_ingredients_print()
+                }), 200
+
      except Exception as e:
           db.session.rollback()
           return jsonify({'error':str(e)}), 500
 
 @recipes_db.route('/recipes/<int:recipe_id>', methods=['DELETE'])
-# @login_required
+@login_required
 def delete_recipe(recipe_id):
      recipe = Recipe.query.get_or_404(recipe_id, "error: recipe does not exist!")
-     user_id = current_user.user_id if current_user.is_authenticated else 67
+     user_id = current_user.user_id
 
      if user_id != recipe.submitted_by:
           return jsonify({'error': 'User did not submit this recipe. Cannot delete it.'}), 401
@@ -285,3 +373,28 @@ def get_recent_recipes():
          'has_prec': pagination.has_prev
 
     }), 200
+
+### Just quick way to check RecipeIngredients was deleted alongside a recipe
+@recipes_db.route('/recipeIng', methods=['GET'])
+def get_recipe_ing():
+     # Get pagination parameters from query string
+     page = request.args.get('page', 1, type=int)
+     per_page = request.args.get('per_page', 10, type=int)
+
+     # limit per_page to prevent excessive data retrieval
+     per_page = min(per_page, 100)
+
+     pagination = RecipeIngredient.query.order_by(RecipeIngredient.recipe_ingredient_id.desc()).paginate(
+          page = page,
+          per_page = per_page,
+          error_out=False
+          )
+
+     return jsonify({
+          'recipe Ingredient': [ing.to_dict() for ing in pagination.items],
+          'total': pagination.total,
+          'pages': pagination.pages,
+          'current_page': page,
+          'has_next': pagination.has_next,
+          'has_prev': pagination.has_prev
+     }), 200

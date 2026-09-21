@@ -87,10 +87,20 @@ def test_submit_recipe(test_client, make_user):
     assert 'Cookies' in response.json['recipe']['title']
 
 def test_recipe_fixture(make_recipe):
+    """
+    GIVEN a request to make a recipe
+    WHEN accessing the make_recipe ficture
+    THEN successfully add a recipe to the DB
+    """
     response = make_recipe()
-    assert response.status_code == 201, f"Route failed with response {response.get_data(as_text=True)}"
+    assert response.status_code == 201
 
 def test_same_recipe_title(make_recipe):
+    """
+    GIVEN a recipe with the same name as an existing recipe
+    WHEN submitting a recipe
+    THEN throw an error
+    """
     make_recipe()
     response = make_recipe(user_email='easy3@gmail.com')
 
@@ -208,13 +218,82 @@ def test_get_recipe_by_invalid_id(test_client):
 #     WHEN accessing /recipes/search
 #     THEN return """
 
-"""
-    DAMN IT another route that needs an overhaul because of ingredients
-"""
-# def test_update_recipe(test_client, make_recipe):
-#     recipe_res = make_recipe()
-#     assert recipe_res.status_code == 201
+def test_delete_recipe(test_client, make_recipe):
+    """
+    GIVEN a logged in user
+    WHEN deleting a recipe user created
+    THEN successfully delete the recipe and recipeIngredient records from DB
+    """
+    # Create recipe
+    recipe_res = make_recipe()
+    assert recipe_res.status_code == 201
 
-#     recipe_update_data = {
+    # Delete recipe
+    res = test_client.delete('/recipes/1')
+    assert res.status_code == 200
+    assert 'Recipe deleted successfully' in res.json['message']
 
-#     }
+    # Attempt to grab recipe
+    double_check_res = test_client.get('recipes/1')
+    assert double_check_res.status_code == 404
+
+    # Check if recipeIngredients exist (None should exist)
+    ing_res = test_client.get('/recipeIng')
+    assert ing_res.status_code == 200
+
+def test_delete_recipe_invalid_auth(test_client, make_recipe, make_user):
+    """
+    GIVEN a logged in user
+    WHEN deleting a recipe user did NOT created
+    THEN throw an error
+    """
+    # Create recipe
+    recipe_res = make_recipe()
+    assert recipe_res.status_code == 201
+
+    # Make new user
+    make_user(email="newUser@gmail.com")
+    login_info = {'email':'newUser@gmail.com', 'password':'easy'}
+    login_response = test_client.post('/login', json=login_info)
+    assert login_response.status_code == 201
+
+    # Attempt to delete recipe
+    res = test_client.delete('/recipes/1')
+    assert res.status_code == 401
+    assert 'User did not submit this recipe' in res.json['error']
+
+def test_update_recipe(test_client, make_recipe, capsys):
+    """
+    GIVEN proper recipe format with new recipe data
+    WHEN accessing the update recipe route
+    THEN successfully update the recipe
+    """
+    # Create recipe
+    recipe_res = make_recipe()
+    assert recipe_res.status_code == 201
+
+    # Need to include all prev. ings. or it'll think you meant to remove/delete that ing 
+    new_recipe_info = {
+        'title':'Changed You!',
+        'source_platform':'Instagram',
+        'recipe_ingredients':
+        [{'name':'GOLD GOLD GOLD', 'amount':'500', 'unit':'Tbsp'},
+         {'name':'eggs', 'amount':'400'},
+         {'name:':'salted butter'},
+         {'name':'granulated sugar'},
+         {'name':'light brown sugar'},
+         {'name':'pure vanilla extract'},
+         {'name':'all-purpose flour'},
+         {'name':'baking soda'},
+         {'name':'baking powder'},
+         {'name':'sea salt'},
+         {'name':'chocolate chips'},
+        ]
+    }
+    # Update recipe
+    res = test_client.put('/recipes/1', json=new_recipe_info)
+    assert res.status_code == 200
+    assert b'Changed You!' in res.data
+    assert b'Instagram' in res.data
+    assert b'gold gold gold' in res.data
+    assert 400 == res.json['ingredients'][3]['amount']

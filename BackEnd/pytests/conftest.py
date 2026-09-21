@@ -64,13 +64,13 @@ def make_recipe(test_client, make_user):
         recipe_ingredients= [
             '1 cup salted butter softened',
             '1 cup granulated sugar',
-            '1 cup light brown sugar packed',
+            '1 cup light brown sugar, packed testing the comments functionality',
             '2 teaspoons pure vanilla extract',
-            '2 large eggs',
+            '2 large, eggs',
             '3 cups all-purpose flour',
             '1 teaspoon baking soda',
             '½ teaspoon baking powder',
-            '1 teaspoon sea salt',
+            '1 teaspoon sea salt optional',
             '2 cups chocolate chips (12 oz)'
         ],
         user_email = "easy2@gmail.com",

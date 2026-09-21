@@ -116,11 +116,16 @@ class Ingredient(db.Model):
     # Figure out later, focus on macros
     # micronutrients = db.Column(db.JSON, default=dict)
 
-    def to_dict(self):
+    def to_dict(self, mode=1):
+        """Default mode is 1 which returns minimized non-macro nutrient info, 2 returns full data"""
         data = {}
         for column in self.__table__.columns:
-            value = getattr(self, column.name)
-            data[column.name] = value
+            if mode == 1 and column.name == 'name':
+                value = getattr(self, column.name)
+                data[column.name] = value
+            elif mode == 2:
+                value = getattr(self, column.name)
+                data[column.name] = value
         return data
 
     @classmethod
@@ -232,7 +237,7 @@ class Recipe(db.Model):
             data[column.name] = value
         return data
 
-    def get_ingredients(self):
+    def get_ingredients_print(self):
         # Generate select query from writeonlymapped relationship
         stmt = self.recipe_ingredients.select()
 
@@ -241,10 +246,19 @@ class Recipe(db.Model):
 
         return [ri.to_dict() for ri in recipe_ingredients]
 
+    def get_ingredients(self):
+                # Generate select query from writeonlymapped relationship
+        stmt = self.recipe_ingredients.select()
+
+        # execute and return all rows as a python list
+        recipe_ingredients = db.session.scalars(stmt).all()
+
+        return recipe_ingredients
+
 class SavedRecipes(db.Model):
     __tablename__ = 'SavedRecipes'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.recipe_id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id', ondelete='CASCADE'), nullable=False)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.recipe_id', ondelete='CASCADE'), nullable=False)
     saved_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
