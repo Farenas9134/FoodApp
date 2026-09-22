@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from sqlalchemy.orm import joinedload
-from sqlalchemy import select
+from sqlalchemy import select, delete
 
 from ..models import Ingredient, Recipe, UserPantry
 from ..extensions import db
@@ -88,51 +88,97 @@ def add_to_user_pantry():
             'details':str(e)
         }), 400
 
-"""Standard initial approach, runs X queries. New one does 2 queries to DB"""
-# @user_pantry_bp.route('/pantry', methods=['POST'])
-# @login_required
-# def add_to_user_pantry():
-#     """Adds a set of ingredient ids into the User's pantry"""
-#     data = request.get_json()
-#     if not isinstance(data, dict):
-#         return jsonify({'error':'Request body must be valid JSON'}), 400
+def close_this():
+    """Standard initial approach, runs X queries. New one does 2 queries to DB"""
+    # @user_pantry_bp.route('/pantry', methods=['POST'])
+    # @login_required
+    # def add_to_user_pantry():
+    #     """Adds a set of ingredient ids into the User's pantry"""
+    #     data = request.get_json()
+    #     if not isinstance(data, dict):
+    #         return jsonify({'error':'Request body must be valid JSON'}), 400
 
-#     # grab ing id's from data
-#     ing_list = data.get('ingredients')
-#     if not ing_list:
-#         return jsonify({'message':'No ingredients provided'}), 200
+    #     # grab ing id's from data
+    #     ing_list = data.get('ingredients')
+    #     if not ing_list:
+    #         return jsonify({'message':'No ingredients provided'}), 200
 
-#     try:
-#         for ing_id in ing_list:
-#             # Check to see if ing exists
-#             stmt = Ingredient.get_visible_for_user(current_user.user_id).where(Ingredient.id==ing_id)
-#             ingredient = db.session.scalars(stmt).first()
+    #     try:
+    #         for ing_id in ing_list:
+    #             # Check to see if ing exists
+    #             stmt = Ingredient.get_visible_for_user(current_user.user_id).where(Ingredient.id==ing_id)
+    #             ingredient = db.session.scalars(stmt).first()
 
-#             # If ingredient DNE skip
-#             if not ingredient: continue
+    #             # If ingredient DNE skip
+    #             if not ingredient: continue
 
-#             # Check if ing not already in pantry
-#             stmt = select(UserPantry).where(
-#                 UserPantry.user_id == current_user.user_id,
-#                 UserPantry.ingredient_id == ing_id
-#             )
-#             pantry_ingredient = db.session.scalars(stmt).first()
-#             if pantry_ingredient: continue
+    #             # Check if ing not already in pantry
+    #             stmt = select(UserPantry).where(
+    #                 UserPantry.user_id == current_user.user_id,
+    #                 UserPantry.ingredient_id == ing_id
+    #             )
+    #             pantry_ingredient = db.session.scalars(stmt).first()
+    #             if pantry_ingredient: continue
 
-#             # Ingredient exists and is not in pantry, create record and commit
-#             pantry_ingredient = UserPantry(user_id = current_user.user_id, ingredient_id=ing_id)
-#             db.session.add(pantry_ingredient)
-#             db.session.flush()
-#         # Once all ingredient ids gone through, commit
-#         db.session.commit()
+    #             # Ingredient exists and is not in pantry, create record and commit
+    #             pantry_ingredient = UserPantry(user_id = current_user.user_id, ingredient_id=ing_id)
+    #             db.session.add(pantry_ingredient)
+    #             db.session.flush()
+    #         # Once all ingredient ids gone through, commit
+    #         db.session.commit()
 
-#         return jsonify({
-#             'message':'Successfully added ingredients into User Pantry'
-#         }), 201
+    #         return jsonify({
+    #             'message':'Successfully added ingredients into User Pantry'
+    #         }), 201
+        
+    #     except Exception as e:
+    #         db.session.rollback()
+    #         return jsonify({
+    #             'error':'Could not update User Pantry',
+    #             'details':str(e)
+    #         }), 400
+
+@user_pantry_bp.route('/pantry', methods=['DELETE'])
+def remove_from_user_pantry():
+    """Removes a set of ingredient ids from User's pantry"""
+    data = request.get_json()
+    if not isinstance(data, dict):
+        return jsonify({'error':'Request body must be valid JSON'}), 400
+
+    # grab ing id's from data
+    ing_list = data.get('ingredients')
+    if not ing_list:
+        return jsonify({'message':'No ingredients provided'}), 200
+
+    try:
+        # Grab all existing ingredients in pantry
+        stmt = select(UserPantry.ingredient_id).where(
+            UserPantry.user_id == current_user.user_id
+        )
+        current_pantry_ids = set(db.session.scalars(stmt).all())
+
+        # Extract only ids to remove from pantry
+        # Intersection of both sets to avoid doing validation of given ids
+        ids_to_remove = current_pantry_ids & set(ing_list)
+
+        if not ids_to_remove:
+            return jsonify({'message':'Given ingredients do not exist in your pantry'}), 200
+
+        # Remove ingredients
+        stmt = delete(UserPantry).where(
+            UserPantry.user_id == current_user.user_id,
+            UserPantry.ingredient_id.in_(ids_to_remove))
+        db.session.execute(stmt)
+        db.session.commit()
+
+        return jsonify({
+            'message':'Successfully removed given ingredients from pantry!'
+        }), 200
     
-#     except Exception as e:
-#         db.session.rollback()
-#         return jsonify({
-#             'error':'Could not update User Pantry',
-#             'details':str(e)
-#         }), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'error':'Could not update User Pantry',
+            'details':str(e)
+        }), 400
+

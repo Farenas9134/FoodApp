@@ -107,3 +107,16 @@ def make_recipe(test_client, make_user):
         response = test_client.post('/recipes-submit', json=recipe_data)
         return response
     return _make_recipe
+
+@pytest.fixture()
+def make_and_add_user_pantry(test_client, make_recipe):
+    """Calls make_recipe() and adds first 5 ingredients into pantry. Email is pantry@gmail.com"""
+    def _make_and_add_user_pantry():
+        make_recipe(user_email='pantry@gmail.com')
+
+        data = {
+            'ingredients':[1,2,3,4,5]
+        }
+        res = test_client.post('/pantry', json=data)
+        return res
+    return _make_and_add_user_pantry
