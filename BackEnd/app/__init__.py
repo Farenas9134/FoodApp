@@ -63,4 +63,7 @@ def create_app(test_config=None):
     from .routes.ingredients import ingredient_bp
     app.register_blueprint(ingredient_bp)
 
+    from .routes.pantry import user_pantry_bp
+    app.register_blueprint(user_pantry_bp)
+
     return app

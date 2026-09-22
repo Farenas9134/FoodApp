@@ -11,6 +11,7 @@ from sqlalchemy import UniqueConstraint
 import sqlalchemy.orm as so
 
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.orm import joinedload
 
 class Relationships(db.Model):
     __tablename__ = 'Relationships'
@@ -173,11 +174,32 @@ class RecipeIngredient(db.Model):
 
         return data
 class UserPantry(db.Model):
+    """Attrs: id, user_id, ingredient_id"""
     __tablename__ = "UserPantry"
 
+    __table_args__ = (
+            # Ultra guarantee no duplicate records exist
+            UniqueConstraint('user_id', 'ingredient_id', name='uq_user_ingredient'),
+        )
+
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=False)
-    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredient.id'), nullable=False)
+
+    # ondelete='CASCADE' ensures that if User deleted, so are pantry items
+    # index=True creates DB shortcut for fast lookups
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id', ondelete='CASCADE'), nullable=False, index=True)
+
+    # same thing, in case ingredient gets thanos snapped
+    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredient.id', ondelete='CASCADE'), nullable=False, index=True)
+
+    # Direct relationship to Ingredient model for easy data fetching
+    ingredient: so.Mapped['Ingredient'] = so.relationship()
+
+    def to_dict(self):
+        data = self.ingredient.to_dict() if self.ingredient else {}
+        data['pantry_id'] = self.id
+        data['user_id'] = self.user_id
+
+        return data
 class Recipe(db.Model):
     # sets name of db table in SQLite
     __tablename__ = "recipes"
