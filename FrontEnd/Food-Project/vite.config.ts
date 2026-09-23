@@ -8,4 +8,16 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  // Ensures any incoming requests that have a URL that start with /api
+  // have to be forwarded to http://localhost:5000 which is where Flask is running
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:5000',
+        changeOrigin: true,
+        // strips '/api' prefix
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  }
 })
