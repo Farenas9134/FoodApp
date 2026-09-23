@@ -98,3 +98,30 @@ def test__remove_from_pantry_cases(test_client, make_and_add_user_pantry, data, 
     assert res.status_code == expected_status
     assert f'{expected_error}'.encode('utf-8') in res.data
 
+def test_pantry_match(test_client, make_and_add_user_pantry, capsys):
+    # Setup pantry (adds first 5 ingredients of inner make_recipe() to pantry)
+    initial_res = make_and_add_user_pantry()
+    assert initial_res.status_code == 201
+
+    # Query pantry match with low threshold (%10)
+    res = test_client.get('/pantry-match?min_match_percentage=0.1')
+    assert res.status_code == 200
+
+    data = res.get_json()
+    assert 'recipes_matched' in data
+    assert len(data['recipes_matched']) == 1
+
+    matched_recipe = data['recipes_matched'][0]
+    assert matched_recipe['title'] == 'Cookies'
+
+    # Verify match calcs
+    match_info = matched_recipe['match_info']
+    assert match_info['total_required'] == 10
+    assert match_info['total_matched'] == 5
+    assert match_info['missing_count'] == 5
+    assert match_info['match_percentage'] == 50.0
+
+    # Query with high threshold -> shouldn't match
+    res = test_client.get('/pantry-match?min_match_percentage=1.0')
+    assert res.status_code == 200
+    assert len(res.get_json()['recipes_matched']) == 0

@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from sqlalchemy.orm import joinedload
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, func
 
-from ..models import Ingredient, Recipe, UserPantry
+from ..models import Ingredient, Recipe, UserPantry, RecipeIngredient
 from ..extensions import db
 
 user_pantry_bp = Blueprint('user-pantry', __name__)
@@ -139,6 +139,7 @@ def close_this():
     #         }), 400
 
 @user_pantry_bp.route('/pantry', methods=['DELETE'])
+@login_required
 def remove_from_user_pantry():
     """Removes a set of ingredient ids from User's pantry"""
     data = request.get_json()
@@ -182,3 +183,85 @@ def remove_from_user_pantry():
             'details':str(e)
         }), 400
 
+@user_pantry_bp.route('/pantry-match', methods=['GET'])
+@login_required
+def get_pantry_matched_recipes():
+    """Finds and ranks recipes based on a user's pantry contents"""
+    # Check query args first, then check any JSON body if given, then default to 0.8 if all else fails
+    json_data = request.get_json(silent=True) or {}
+    raw_percentage = request.args.get('min_match_percentage') or json_data.get('min_match_percentage', 0.8)
+
+    # If wrong input, just default to 0.8
+    try:
+        min_match_percentage = float(raw_percentage)
+    except (ValueError, TypeError):
+        min_match_percentage = 0.8
+
+    user_id = current_user.user_id
+
+    # Statement/Query to grab all ids in user's pantry
+    pantry_subquery = (
+        select(UserPantry.ingredient_id).where(
+            UserPantry.user_id == user_id
+        ).scalar_subquery()
+    )
+
+    # BIGGGGG ONE SINGLE QUERY/Statement
+    stmt = (
+        # Select Recipes, label their total required ingredients, and total matched ingredients
+        select(
+            Recipe,
+            # Create column for each recipe where we store count of ingredient ids they have
+            func.count(RecipeIngredient.ingredient_id).label('total_required'),
+            # Create column for each recipe, where we store count of matching ingredient_ids in user pantry ids
+            func.count(
+                # If not matching recipeIngredient, make Null and don't increment count
+                func.nullif(RecipeIngredient.ingredient_id.in_(pantry_subquery), False)
+            ).label("total_matched")
+        )
+        # Join Recipe table to RecipeIngredient table by recipe_ids
+        .join(RecipeIngredient, Recipe.recipe_id == RecipeIngredient.recipe_id)
+        # Group joined rows by recipe_id
+        .group_by(Recipe.recipe_id)
+
+        # func.count()s below run inside each bucket
+
+        # Filter out recipe buckets that don't meet minimum match percentage
+        .having(
+            # ingredient_id.in_(pantry_subquery) -> T/F. Is this given recipeIngredient in the User pantry?
+            # func.nullif(..., False) -> If ingredient not in pantry, then turn Fale into NULL
+            # func.count() ignores NULL values, incrementing only for True counts
+            (func.count(func.nullif(RecipeIngredient.ingredient_id.in_(pantry_subquery), False)) 
+             * 1.0 /
+             func.count(RecipeIngredient.ingredient_id))
+             # Only keep Recipes who meet the match ratio requirements
+             >= min_match_percentage
+        )
+
+        # Order buckets by highest match percentage first, then by total ingredients required
+        .order_by(
+            # Match ratio
+            (func.count(func.nullif(RecipeIngredient.ingredient_id.in_(pantry_subquery), False)) * 1.0 /
+             func.count(RecipeIngredient.ingredient_id)).desc(),
+             # RecipeIngredient count
+             func.count(RecipeIngredient.ingredient_id).desc()
+        )
+    )
+
+    results = db.session.execute(stmt).all()
+
+    # Format results to add in match info
+    formatted_results = []
+    for recipe, total_req, total_match in results:
+        recipe_data = recipe.to_dict(mode=2)
+        recipe_data['match_info'] = {
+            'total_required':total_req,
+            'total_matched':total_match,
+            'missing_count':total_req-total_match,
+            'match_percentage': round((total_match/total_req) * 100, 1)
+        }
+        formatted_results.append(recipe_data)
+
+    return jsonify({
+        'recipes_matched': formatted_results
+    }), 200

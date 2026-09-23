@@ -152,8 +152,8 @@ class RecipeIngredient(db.Model):
     # Standalone pk so we can have multiple instances of one ingredient
     recipe_ingredient_id = db.Column(db.Integer, primary_key=True)
 
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.recipe_id', ondelete='CASCADE'), nullable=False)
-    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredient.id', ondelete='CASCADE'), nullable=False)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.recipe_id', ondelete='CASCADE'), nullable=False, index=True)
+    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredient.id', ondelete='CASCADE'), nullable=False, index=True)
 
     amount = db.Column(db.Float, nullable=False, default=0.0)
     unit = db.Column(db.String(50), nullable=False, default='')
