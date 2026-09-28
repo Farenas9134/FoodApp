@@ -1,3 +1,19 @@
+#root {
+  position: relative;
+}
+
+#root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("../assets/food-background1.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  opacity: 15%;
+  z-index: -1;
+}
+
 html, body, #root {
-    background-color: #DBF2D1;
+  background-color: #DBF2D1;
 }

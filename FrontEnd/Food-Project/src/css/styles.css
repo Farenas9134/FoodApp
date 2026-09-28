@@ -11,14 +11,14 @@ body {
     color: black;
     display: flex;
     justify-content: space-between;
-    align-items: stretch;
+    align-items: center;
     gap: 2rem;
-    padding: 0 1rem;
+    /*Format: top, right, bottom, left*/
+    padding: .5rem 2rem .5rem 2rem;
     font-family: "Jacques Francois", sans-serif;
-}
-
-.site-title {
-    font-size: 1.5rem;
+    font-size: larger;
+     /* x-offset | y-offset | blur-radius | spread-radius | color */
+    box-shadow: 0px 5px 6px -1px rgba(0, 0, 0, 0.4);
 }
 
 .nav ul {
@@ -44,4 +44,16 @@ body {
 
 .nav li:hover {
     background-color: #c8c9c8;
+}
+
+.site-logo {
+    height: 3rem;
+    width: auto;
+    margin-left: 0.5rem;
+}
+
+.user-icon {
+    height: .7rem;
+    width: auto;
+    margin-right: 0.5rem;
 }

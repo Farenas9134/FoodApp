@@ -1,12 +1,16 @@
 // @ts-ignore
 import "../css/styles.css"
+// @ts-ignore
+import logo from "../assets/ReciKeep_Icon.png"
+// @ts-ignore
+import user from "../assets/user.png"
 
 function NavBar(){
 
     return (
         <nav className="nav">
-            <a href="/" className="site-title">
-                ReciKeep
+            <a href="/">
+                <img src={logo} alt="Site logo" className="site-logo"></img>
             </a>
             <ul>
                 <li><a href="#" >About Us</a></li>
@@ -22,7 +26,8 @@ function NavBar(){
                     </form>
                 </a>
                 <a href="/login" className="login">
-                    Login
+                <img src={user} alt="User Icon" className="user-icon"></img>
+                    Log In
                 </a>
             </ul>
         </nav>
