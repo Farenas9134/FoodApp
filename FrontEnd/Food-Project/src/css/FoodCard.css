@@ -1,0 +1,108 @@
+.FoodCard {  
+  	width: 330px; 
+ 	height: 450px;
+    background-color: #FFFDF7;
+    border-radius: 10px;
+    /* horizontal offset, vertical offset, blur radius, spread radius, color */
+    box-shadow: 0px 6px 4px grey;
+    position: relative;
+    /* Momentary positioning to view card, figure out how to properly position somehow later */
+    top: 50px;
+    left: 50px;
+    /* Aligning box items */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 10px;
+    box-sizing: border-box;
+    font-family: "Playfair Display", sans-serif;
+    color: #1F3A28;
+}
+
+.image-frame {
+    width: 100%;
+    height: 250px;
+    background-color: #e0ddd5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.card-image{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.recipe-info{
+    width: 90%;
+    height: 70px;
+}
+
+.recipe-rating{
+    display: flex;
+    gap: 5px;
+}
+
+.recipe-name{
+    font-size: 25px;
+    font-weight: 650;
+
+    /* Line Clamp for long recipe names */
+    display: -webkit-box;
+    line-clamp: 1;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    line-height: 1.25;
+    /* min-height: 2.5em; */
+}
+
+.recipe-stats{
+    font-size: 16px;
+    display: flex;
+    gap: 20px;
+    color: black;
+}
+
+.recipe-stats-box{
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.pantry-info{
+    width: 90%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    gap: 10px;
+    background-color: #F1F2E9;
+    font-size: 14px;
+    border-radius: 10px;
+    border: 1px solid #D3D3D3
+}
+
+.pantry-ratio{
+    font-weight: 700;
+}
+
+.button {
+    width: 90%;
+    height: 40px;
+    background-color: #183C04;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    border-radius: 10px;
+    box-shadow: 0px 6px 4px grey;
+}

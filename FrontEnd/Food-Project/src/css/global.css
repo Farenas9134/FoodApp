@@ -1,5 +1,22 @@
+/* global.css */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background-color: #FBF6EA;
+}
+
 #root {
   position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #FBF6EA;
+  isolation: isolate;
 }
 
 #root::before {
@@ -10,10 +27,7 @@
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
-  opacity: 15%;
+  opacity: 0.08;
   z-index: -1;
-}
-
-html, body, #root {
-  background-color: #DBF2D1;
+  pointer-events: none;
 }

@@ -7,18 +7,18 @@ body {
 }
 
 .nav {
-    background-color: #FAFFF4;
-    color: black;
+    background-color: #FBF6EA;
+    color: #1F3A28;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 2rem;
     /*Format: top, right, bottom, left*/
     padding: .5rem 2rem .5rem 2rem;
-    font-family: "Jacques Francois", sans-serif;
-    font-size: larger;
+    font-family: "Playfair Display", sans-serif;
+    font-size: medium;
      /* x-offset | y-offset | blur-radius | spread-radius | color */
-    box-shadow: 0px 5px 6px -1px rgba(0, 0, 0, 0.4);
+    box-shadow: 0px 5px 6px -1px rgba(150, 149, 149, 0.4);
 }
 
 .nav ul {
