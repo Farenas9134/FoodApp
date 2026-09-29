@@ -16,7 +16,7 @@ body {
     /*Format: top, right, bottom, left*/
     padding: .5rem 2rem .5rem 2rem;
     font-family: "Playfair Display", sans-serif;
-    font-size: medium;
+    font-size: 18px;
      /* x-offset | y-offset | blur-radius | spread-radius | color */
     box-shadow: 0px 5px 6px -1px rgba(150, 149, 149, 0.4);
 }

@@ -6,9 +6,6 @@
     /* horizontal offset, vertical offset, blur radius, spread radius, color */
     box-shadow: 0px 6px 4px grey;
     position: relative;
-    /* Momentary positioning to view card, figure out how to properly position somehow later */
-    top: 50px;
-    left: 50px;
     /* Aligning box items */
     display: flex;
     flex-direction: column;

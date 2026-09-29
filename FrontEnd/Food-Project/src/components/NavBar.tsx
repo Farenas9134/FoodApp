@@ -1,9 +1,7 @@
 // @ts-ignore
-import "../css/styles.css"
+import "../css/navbar.css"
 // @ts-ignore
 import logo from "../assets/ReciKeep_Icon2.png"
-// @ts-ignore
-import user from "../assets/user.png"
 
 function NavBar(){
 

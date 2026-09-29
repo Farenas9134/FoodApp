@@ -1,0 +1,74 @@
+.page{
+    padding-top: 3%;
+    padding-left: 8%;
+    padding-right: 9%;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.top-sec{
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: flex-start;
+}
+
+.body {
+    box-sizing: border-box;
+    font-family: "Playfair Display", sans-serif;
+    color: #183C04;
+    flex: 1;
+    max-width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+
+}
+
+.sub-title{
+    font-family: "Fraunces", sans-serif;
+    font-size: 80px;
+    font-size: clamp(40px, 5vw, 80px);
+    font-weight: bold;
+}
+
+.desc{
+    width: 90%;
+    font-size: clamp(18px, 1.8vw, 24px);
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.foodcard-stack{
+    padding-top: 4rem;
+    display: grid;
+    position: relative;
+    flex-shrink: 0;
+    width: 330px; 
+    height: 450px;
+    max-width: 100%;
+}
+
+/* Assign all children to row 1, column 1 */
+.foodcard-stack > * {
+  grid-row: 1;
+  grid-column: 1;
+}
+
+.card1{
+    z-index: 3;
+}
+.card2{
+    z-index: 2;
+    transform: rotate(-10deg) translate(-15%, -8%);
+    filter: blur(2px);
+}
+.card3{
+    z-index: 1;
+    /* rotate: -20deg;
+    transform: translate(-100px, -70px); */
+    transform: rotate(-20deg) translate(-28%, -15%);
+    filter: blur(3px);
+}
