@@ -219,4 +219,4 @@ __marimo__/
 /test.py
 
 # API key for scraping IG
-BackEnd/app/recipe_extraction/api_key.py
+api_key.py
