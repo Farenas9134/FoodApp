@@ -2,7 +2,7 @@ import requests
 import json
 import os
 
-from api_key import API_KEY
+from api_key_ig import API_KEY
 
 headers = {
     "Authorization": "Bearer " + API_KEY,
