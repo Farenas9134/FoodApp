@@ -2,8 +2,10 @@ import requests
 import json
 import os
 
+from api_key import API_KEY
+
 headers = {
-    "Authorization": "Bearer 6fe033d5-c088-493d-bb76-2a906187e7b3",
+    "Authorization": "Bearer " + API_KEY,
     "Content-Type": "application/json",
 }
 
