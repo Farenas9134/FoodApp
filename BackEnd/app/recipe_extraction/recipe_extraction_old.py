@@ -38,11 +38,11 @@ def extract_recipe(link):
     }
     '''
 
-    # CURRENTLY ONLY WORKS FOR RECIPES FROM americastestkitchen.com
-
     url = link
     html = urlopen(url).read().decode("utf-8")
     scraper = scrape_html(html, org_url=url)
+
+    print("Scraper", scraper.canonical_url())
 
     title = scraper.title()
     source_url = scraper.canonical_url()
@@ -83,8 +83,8 @@ def extract_recipe(link):
 def main():
     # recipe = extract_recipe("https://www.americastestkitchen.com/recipes/16181-ancho-rubbed-flank-steak-and-cilantro-rice-with-avocado-sauce")
 
-    recipe2 = extract_recipe("https://www.delish.com/cooking/recipe-ideas/a61807164/best-pumpkin-smores-cookies-recipe/")
-    # print(recipe)
+    recipe2 = extract_recipe("https://allnutritious.com/creamy-chicken-and-mushroom-soup/#wprm-recipe-container-66044")
+    # print(recipe2)
 
 if __name__ == "__main__":
     main()
