@@ -1,10 +1,16 @@
+@import "tailwindcss";
+
 .page{
     padding-top: 3%;
     padding-left: 8%;
     padding-right: 9%;
+    padding-bottom: 10%;
     width: 100%;
     margin: 0 auto;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 150px;
 }
 
 .top-sec{
@@ -14,6 +20,13 @@
     align-items: flex-start;
 }
 
+.bot-sec{
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+/* ======== TOP SECTION ==========*/
 .body {
     box-sizing: border-box;
     font-family: "Playfair Display", sans-serif;
@@ -71,4 +84,20 @@
     transform: translate(-100px, -70px); */
     transform: rotate(-20deg) translate(-28%, -15%);
     filter: blur(3px);
+}
+
+/* ======== BOTTOM SECTION/GUIDE ==========*/
+.subheader{
+    font-family: "Fraunces", sans-serif;
+    font-size: 96px;
+    color: #C1622D;
+}
+
+.cps{
+    font-family: "Fraunces", sans-serif;
+    font-size: 32px;
+    display: flex;
+    justify-content: center;
+    color: #183C04;
+    opacity: 70%;
 }

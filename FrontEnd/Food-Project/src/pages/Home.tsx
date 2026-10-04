@@ -1,14 +1,12 @@
 import { Component, useEffect } from "react"
-import NavBar from '../components/NavBar.tsx'
-import FoodCard from "../components/FoodCard"
+import FoodCard from "../components/UI/FoodCard.tsx"
+import PhoneFrame from "../components/UI/PhoneFrame.tsx"
 
 // @ts-ignore
 import "../css/home.css"
 
 function Home() {
     return (
-        <>
-        <NavBar/>
         <div className="page">
             <div className="top-sec">
                 <div className="body">
@@ -36,8 +34,14 @@ function Home() {
                     </div>
                 </div>
             </div>
+            <div className="bot-sec">
+                <div>
+                    <p className="subheader" id="1">How it works</p>
+                    <p className="cps">COPY • PASTE • SAVE</p>
+                </div>
+            </div>
+            <PhoneFrame></PhoneFrame>
         </div>
-        </>
     )
 }
 
