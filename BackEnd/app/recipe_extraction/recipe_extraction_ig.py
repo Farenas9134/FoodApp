@@ -3,39 +3,52 @@ import json
 import os
 
 from api_key_ig import API_KEY
+from recipe_cleanup import *
 
-headers = {
-    "Authorization": "Bearer " + API_KEY,
-    "Content-Type": "application/json",
-}
+def extract_recipe(instagram_link):
 
-data = json.dumps({
-    "input": [{"url":"https://www.instagram.com/reel/DXMUPlzk8xi/?stkn=ZWo3NHhkMTNsczE4","country":"US"}],
-    "limit_per_input": 50,
-})
+    headers = {
+        "Authorization": "Bearer " + API_KEY,
+        "Content-Type": "application/json",
+    }
 
-response = requests.post(
-    "https://api.brightdata.com/datasets/v3/scrape?dataset_id=gd_lk5ns7kz21pck8jpis&notify=false&include_errors=true",
-    headers=headers,
-    data=data
-)
+    data = json.dumps({
+        "input": [{"url": instagram_link,"country":"US"}],
+        "limit_per_input": 50,
+    })
 
-data = response.json()
+    response = requests.post(
+        "https://api.brightdata.com/datasets/v3/scrape?dataset_id=gd_lk5ns7kz21pck8jpis&notify=false&include_errors=true",
+        headers=headers,
+        data=data
+    )
 
-# Output file path (relative to current working directory)
-output_file = "test.json"
+    data = response.json()
 
-try:
-    # Ensure the directory exists (optional if writing to current folder)
-    os.makedirs(os.path.dirname(output_file) or ".", exist_ok=True)
+    author = data["user_posted"]
+    desc = data["description"]
+    hashtags = data["hashtags"]
 
-    # Open file in write mode and dump JSON
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, sort_keys=True, ensure_ascii=False)
+    cleaned_desc = cleanup_caption(desc)
 
-    print(f"JSON data successfully written to '{output_file}'")
+    sections = find_sections(cleaned_desc)
 
-except (OSError, TypeError) as e:
-    print(f"Error writing JSON to file: {e}")
+    ingredients = extract_ingredients(sections["ingredients_text"])
+    instructions = extract_instructions(sections["instructions_text"])
 
-# print(response.json())
+    return {
+        'title': "TBD",
+        'source_url': instagram_link,
+        'source_platform': "Instagram",
+        'instructions': instructions,
+        'image_url': None,
+        'tags': hashtags,
+        'created_by': author,
+        'recipe_ingredients': ingredients,
+        'nutrients': [],
+        'description': "TBD",
+        'total_time': 0,
+        'category': 'TBD',
+        'rating': 0,
+        'servings': "TBD"
+    }

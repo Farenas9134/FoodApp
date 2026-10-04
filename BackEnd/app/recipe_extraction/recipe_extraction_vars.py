@@ -40,6 +40,30 @@ UNITS = [
     "slices", "slice"
 ]
 
+UNIT_ALIASES = {
+    "teaspoon": "tsp",
+    "teaspoons": "tsp",
+    "tablespoon": "tbsp",
+    "tablespoons": "tbsp",
+    "cups": "cup",
+    "ounces": "oz",
+    "ounce": "oz",
+    "pounds": "lb",
+    "pound": "lb",
+    "lbs": "lb",
+    "grams": "g",
+    "gram": "g",
+    "kilograms": "kg",
+    "kilogram": "kg",
+    "milliliters": "ml",
+    "milliliter": "ml",
+    "liters": "l",
+    "liter": "l",
+    "cloves": "clove",
+    "pieces": "piece",
+    "slices": "slice"
+}
+
 UNIT_PATTERN = "|".join(sorted(UNITS, key=len, reverse=True))
 
 QUANTITY_PATTERN = r"\d+(?:\.\d+)?(?:/\d+)?|½|⅓|⅔|¼|¾"

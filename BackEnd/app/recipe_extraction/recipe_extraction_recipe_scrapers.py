@@ -2,7 +2,10 @@ from recipe_scrapers import scrape_html
 from urllib.request import urlopen
 from ingredient_parser import parse_ingredient
 
-import json
+"""
+    This program extracts recipes uusing the recipe_scrapers package
+    and only works with links from websites outlined below
+"""
 
 ##### NOTES FOR FUTURE WORK ####
 # UPDATE MODELS TO INCLUDE ALL INFO RETRIEVED BY SCRAPER AND UPDATE MODELS 
@@ -41,8 +44,6 @@ def extract_recipe(link):
     url = link
     html = urlopen(url).read().decode("utf-8")
     scraper = scrape_html(html, org_url=url)
-
-    print("Scraper", scraper.canonical_url())
 
     title = scraper.title()
     source_url = scraper.canonical_url()
