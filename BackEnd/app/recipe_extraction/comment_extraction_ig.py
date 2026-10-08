@@ -4,6 +4,12 @@ import os
 
 from api_key_ig import API_KEY
 
+"""
+    Experimenting with extracting comments under a post in cases where the recipe is posted in the comments.
+    The goal is to extract only comments written by the author and then extract information from there, this
+    may require extra processing potentially with LLM or NLP.
+"""
+
 headers = {
     "Authorization": "Bearer" + API_KEY,
     "Content-Type": "application/json",
@@ -11,7 +17,7 @@ headers = {
 
 data = json.dumps({
     "input": [{"url":"https://www.instagram.com/reel/DXMUPlzk8xi/?stkn=ZWo3NHhkMTNsczE4"},{"url":"https://www.instagram.com/catsofinstagram/p/CesFC7JLyFl/?img_index=1"},{"url":"https://www.instagram.com/cats_of_instagram/reel/C2TmNOVMSbG/","exclude_comments":["18334942807171235","18077653106575592"]}],
-    "limit_per_input": 50,
+    "limit_per_input": 1,
 })
 
 response = requests.post(

@@ -5,6 +5,14 @@ import os
 from api_key_ig import API_KEY
 from recipe_cleanup import *
 
+"""
+    Extracts recipe information from instagram post descriptions like ingredients and instructions
+    
+    Currently only works when information is well separated and defined (i.e. explicit ingredient caption).
+    Would need to use NLP or an LLM to extract information from descriptions that do not have sections
+    clearly labeled
+"""
+
 def extract_recipe(instagram_link):
 
     headers = {
@@ -14,7 +22,7 @@ def extract_recipe(instagram_link):
 
     data = json.dumps({
         "input": [{"url": instagram_link,"country":"US"}],
-        "limit_per_input": 50,
+        "limit_per_input": 1,
     })
 
     response = requests.post(
