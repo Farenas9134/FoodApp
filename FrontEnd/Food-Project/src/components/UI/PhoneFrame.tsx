@@ -1,7 +1,8 @@
 // @ts-ignore
 import "../../css/PhoneFrame.css"
+import { PhoneMask } from "./PhoneMask";
 
-export function PhoneFrame() {
+export function PhoneFrame({ picture }: { picture: string}) {
   return (
     <div className="relative w-[470px] h-[940px]">
       
@@ -10,6 +11,7 @@ export function PhoneFrame() {
         {/* Inner Screen Container */}
         <div className="absolute inset-[8px] bg-black rounded-[58px] overflow-hidden">
           {/* Wallpaper / App Content Goes Here */}
+          <PhoneMask src={picture}/>
         </div>
       </div>
 
@@ -40,4 +42,3 @@ export function PhoneFrame() {
 }
 
 export default PhoneFrame
-

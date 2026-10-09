@@ -23,7 +23,7 @@ html, body {
   content: "";
   position: fixed;
   inset: 0;
-  background-image: url("../assets/food-background1.png");
+  background-image: url("../assets/backgrounds/food-background1.png");
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;

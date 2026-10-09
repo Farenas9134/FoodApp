@@ -1,6 +1,11 @@
-import { Component, useEffect } from "react"
+import * as React from "react"
+import * as Scrollytelling from '@bsmnt/scrollytelling';
 import FoodCard from "../components/UI/FoodCard.tsx"
 import PhoneFrame from "../components/UI/PhoneFrame.tsx"
+// @ts-ignore
+import instaCookies from "../assets/backgrounds/instaCookies.png";
+// @ts-ignore
+import phoneLogoScreen from "../assets/backgrounds/Phone-Logo-Screen.png"
 
 // @ts-ignore
 import "../css/home.css"
@@ -34,39 +39,61 @@ function Home() {
                     </div>
                 </div>
             </div>
-            <div className="bot-sec">
-                <div>
-                    <p className="subheader" id="1">How it works</p>
-                    <p className="cps">COPY • PASTE • SAVE</p>
-                </div>
-            </div>
-            <PhoneFrame></PhoneFrame>
+            
+            {/* Bottom section --- Scrollytelling */}
+            <Scrollytelling.Root debug={{ label: "phone" }}>
+                <Scrollytelling.Pin childHeight={"100vh"} pinSpacerHeight={'400vh'} top={0}>
+                    <div className="flex flex-col w-full gap-[140px] h-[100vh] overflow-hidden">
+                        
+                        <Scrollytelling.Animation 
+                        tween={{
+                            start:0,
+                            end:10,
+                            fromTo: [
+                                {y: 400, opacity: .5},
+                                {y:0, opacity:1},
+                            ],
+                        }}>
+                            <div className="flex flex-col items-center">
+                                <p className="subheader" id="1">How it works</p>
+                                <p className="cps">COPY • PASTE • SAVE</p>
+                            </div>
+                        </Scrollytelling.Animation>
+
+                        <Scrollytelling.Animation 
+                        tween={{
+                            start:0,
+                            end:15,
+                            fromTo: [
+                                {y: 600, opacity: 0},
+                                {y:0, opacity:1},
+                            ],
+                        }}>
+                            <div className="absolute bottom-0 text-[40px] font-display font-semibold text-[#1F3A28]">
+                                ↓ Scroll
+                            </div>
+                        </Scrollytelling.Animation>
+
+                        <Scrollytelling.Animation
+                        tween={{
+                            start: 0,
+                            end: 25,
+                            fromTo: [
+                                { y: 600, opacity: 0 },
+                                { y: 0, opacity: 1 },
+                            ],
+                        }}
+                        >
+                            <div className="flex items-center flex-col">
+                                <PhoneFrame picture={instaCookies} />
+                            </div>
+                        </Scrollytelling.Animation>
+                    </div>
+
+                </Scrollytelling.Pin>
+            </Scrollytelling.Root>
         </div>
     )
 }
-
-// function Home(){
-//     useEffect(() => {
-//         console.log("Fetching recipes");
-
-//         fetch('/api/recipes')
-//          .then((response) => {
-//             if (!response.ok) {
-//                 throw new Error('HTTP error!');
-//             }
-//             return response.json()
-//          })
-//           .then((data) => {
-//             console.log("Recipes returned from Flask:", data);
-//           });
-//     }, []);
-
-//     return (
-//         <div>
-//             <h1>Major Food App</h1>
-//             <p>Hello!</p>
-//         </div>
-//     )
-// }
 
 export default Home
