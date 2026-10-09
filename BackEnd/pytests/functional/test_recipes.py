@@ -1,4 +1,5 @@
-from app import create_app, recipe_extraction
+from FoodApp.BackEnd.app.recipe_extraction import recipe_extraction_recipe_scrapers
+from app import create_app
 import pytest
 
 '''
@@ -29,7 +30,7 @@ def test_extraction_and_submit_recipe(test_client, make_user):
     login_response = test_client.post('/login', json=login_info)
     assert login_response.status_code == 201
 
-    recipe = recipe_extraction.extract_recipe("https://www.americastestkitchen.com/recipes/16181-ancho-rubbed-flank-steak-and-cilantro-rice-with-avocado-sauce")
+    recipe = recipe_extraction_recipe_scrapers.extract_recipe("https://www.americastestkitchen.com/recipes/16181-ancho-rubbed-flank-steak-and-cilantro-rice-with-avocado-sauce")
 
     # Submit recipe
     response = test_client.post('/recipes-submit', json=recipe)
