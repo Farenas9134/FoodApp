@@ -3,13 +3,17 @@ import emoji
 import re
 import unicodedata
 
-from recipe_extraction_vars import INGREDIENT_HEADERS, INSTRUCTION_HEADERS, UNITS, UNIT_PATTERN, UNIT_ALIASES, QUANTITY_PATTERN, INGREDIENT_PATTERN
+from recipe_extraction_vars import INGREDIENT_HEADERS, INSTRUCTION_HEADERS, UNITS, UNIT_PATTERN, UNIT_ALIASES, QUANTITY_PATTERN, INGREDIENT_PATTERN, fractions
 
 """
     This function cleans up captions by removing URLs, standardizing bullet points, and 
     cleaning up excessive space 
 """
 def cleanup_caption(caption):
+    # Cleaning up fractions
+    for fraction, replacement in fractions.items():
+        caption = caption.replace(fraction, replacement)
+
     # Normalizing UNICODE characters
     caption = unicodedata.normalize("NFKC", caption)
     
@@ -18,6 +22,7 @@ def cleanup_caption(caption):
     
     # Removing hashtag symbols
     caption = re.sub(r"#\w+", "", caption)
+    caption = re.sub(r"#+", "", caption)
 
     # Normalizing bullet characters to be the same
     caption = re.sub(r"^[\s]*[•▪◦]\s*", "- ", caption, flags=re.MULTILINE)
@@ -38,6 +43,10 @@ def normalize_header(line):
     line = re.sub(r"^[^\w]+|[^\w]+$", "", line)
 
     return line
+
+def is_ingredient_header(line):
+
+    return 0
 
 """
     This function identifies ingredient and instruction sections

@@ -1,5 +1,4 @@
 from recipe_cleanup import *
-from recipe_extraction_vars import INGREDIENT_HEADERS, INSTRUCTION_HEADERS, UNITS, UNIT_ALIASES, UNIT_PATTERN, QUANTITY_PATTERN, INGREDIENT_PATTERN
 
 import json
 
@@ -17,12 +16,13 @@ def main():
     
     sections = find_sections(cleaned_desc)
 
+    # print(sections)
+
     ingredients = extract_ingredients(sections["ingredients_text"])
     instructions = extract_instructions(sections["instructions_text"])
 
-    # print("INGREDIENTS", ingredients)
-    # print("INSTRUCTIONS", instructions)
-
+    # print("ING", ingredients)
+    # print("INS", instructions)
 
 if __name__ == "__main__":
     main()

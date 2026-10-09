@@ -1,6 +1,6 @@
 import requests
 import json
-import os
+import time
 
 from api_key_ig import API_KEY
 from recipe_cleanup import *
@@ -30,6 +30,34 @@ def extract_recipe(instagram_link):
         headers=headers,
         data=data
     )
+
+    max_attempts = 2
+    num_attempts = 0
+    snapshot_id = ""
+
+    # In case snapshot is not ready to be downloaded yet
+    if response.status_code == 202:
+        snapshot_id = response.json()['snapshot_id']
+        print("Snapshot is not quite ready to download, trying again in 30 seconds")
+
+    # Wait for 1 minute if snapshot not ready to be downloaded
+    while response.status_code == 202 and num_attempts < max_attempts:
+        time.sleep(30)
+        num_attempts += 1
+
+        print(f"Job is running with Snapshot ID: {snapshot_id}")
+        # print("Trying again...")
+
+        url = f"https://api.brightdata.com/datasets/v3/snapshot/{snapshot_id}"
+
+        headers = {"Authorization": "Bearer " + API_KEY}
+
+        response = requests.get(url, headers=headers)
+
+    # In case scraping takes too long, will modify timeout time later
+    if num_attempts == max_attempts:
+        print("Scraping took too long, try again later")
+        exit(1)
 
     data = response.json()
 
