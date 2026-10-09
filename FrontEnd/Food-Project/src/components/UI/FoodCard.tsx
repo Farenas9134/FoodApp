@@ -1,7 +1,7 @@
 // @ts-ignore
 import "../../css/FoodCard.css"
 // @ts-ignore
-import cookies from "../../assets/cookies.jpg"
+import cookies from "../../assets/foodPics/cookies.jpg"
 import { FaStar } from 'react-icons/fa';
 import { CiClock2 } from 'react-icons/ci'
 import { BiDish, BiSolidDoughnutChart } from 'react-icons/bi'

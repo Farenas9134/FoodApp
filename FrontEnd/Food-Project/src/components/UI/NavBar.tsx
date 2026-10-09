@@ -1,7 +1,7 @@
 // @ts-ignore
 import "../../css/navbar.css"
 // @ts-ignore
-import logo from "../../assets/ReciKeep_Icon2.png"
+import logo from "../../assets/icons/ReciKeep_Icon2.png"
 import { Link } from 'react-router-dom'
 
 function NavBar(){
