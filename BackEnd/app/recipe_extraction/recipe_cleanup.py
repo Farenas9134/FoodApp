@@ -64,9 +64,6 @@ def find_sections(caption):
     for line in caption.splitlines():
         clean_line = normalize_header(line)
 
-        # print("RAW:", repr(line))
-        # print("CLEANED", repr(clean_line))
-
         if clean_line in INGREDIENT_HEADERS:
             current_section = "ingredients_text"
             continue
