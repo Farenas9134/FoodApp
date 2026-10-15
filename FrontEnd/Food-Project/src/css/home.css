@@ -1,12 +1,13 @@
 @import "tailwindcss";
 @theme {
-    --font-display: "Playfair Display", sans-serif
+    --font-display: "Fraunces", sans-serif;
+    --font-body: "Playfair Display", serif;
 }
 
 .page{
     padding-top: 3%;
-    padding-left: 8%;
-    padding-right: 9%;
+    padding-left: 5%;
+    padding-right: 5%;
     /* padding-bottom: 10%; */
     width: 100%;
     margin: 0 auto;
@@ -104,4 +105,9 @@
     justify-content: center;
     color: #183C04;
     opacity: 70%;
+}
+
+#copy{
+    color: #C1622D;
+    opacity: 100%;
 }
