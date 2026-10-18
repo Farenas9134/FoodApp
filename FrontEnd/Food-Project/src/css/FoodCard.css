@@ -1,18 +1,17 @@
-.FoodCard {  
-  	width: 330px; 
- 	height: 450px;
+.FoodCard {
+    font-size: var(--card-size, 16px);
+    width: 20.625em;
+    height: 28.125em;
     background-color: #FFFDF7;
-    border-radius: 10px;
-    /* horizontal offset, vertical offset, blur radius, spread radius, color */
-    box-shadow: 0px 6px 4px grey;
+    border-radius: 0.625em;
+    box-shadow: 0 0.375em 0.25em grey;  
     position: relative;
-    /* Aligning box items */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
 
-    padding: 10px;
+    padding: 0.625em;
     box-sizing: border-box;
     font-family: "Playfair Display", sans-serif;
     color: #1F3A28;
@@ -20,7 +19,7 @@
 
 .image-frame {
     width: 100%;
-    height: 250px;
+    height: 15.625em;
     background-color: #e0ddd5;
     display: flex;
     align-items: center;
@@ -28,25 +27,25 @@
     overflow: hidden;
 }
 
-.card-image{
+.card-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
 }
 
-.recipe-info{
+.recipe-info {
     width: 90%;
-    height: 70px;
+    height: 4.375em;
 }
 
-.recipe-rating{
+.recipe-rating {
     display: flex;
-    gap: 5px;
+    gap: 0.3125em;
 }
 
-.recipe-name{
-    font-size: 25px;
+.recipe-name {
+    font-size: 1.5625em;
     font-weight: 650;
 
     /* Line Clamp for long recipe names */
@@ -58,48 +57,47 @@
     text-overflow: ellipsis;
 
     line-height: 1.25;
-    /* min-height: 2.5em; */
 }
 
-.recipe-stats{
-    font-size: 16px;
+.recipe-stats {
+    font-size: 1em;
     display: flex;
-    gap: 20px;
+    gap: 1.25em;
     color: black;
 }
 
-.recipe-stats-box{
+.recipe-stats-box {
     display: flex;
-    gap: 5px;
+    gap: 0.3125em;
     align-items: center;
 }
 
-.pantry-info{
+.pantry-info {
     width: 90%;
-    height: 50px;
+    height: 3.5714em;
     display: flex;
     align-items: center;
-    padding: 10px;
-    gap: 10px;
+    padding: 0.7143em;
+    gap: 0.7143em;  
     background-color: #F1F2E9;
-    font-size: 14px;
-    border-radius: 10px;
-    border: 1px solid #D3D3D3
+    font-size: 1em;   
+    border-radius: 0.7143em; 
+    border: 1px solid #D3D3D3;
 }
 
-.pantry-ratio{
+.pantry-ratio {
     font-weight: 700;
 }
 
 .button {
     width: 90%;
-    height: 40px;
+    height: 2.5em;     
     background-color: #183C04;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    border-radius: 10px;
-    box-shadow: 0px 6px 4px grey;
+    font-size: 1em;   
+    border-radius: 0.625em;
+    box-shadow: 0 0.375em 0.25em grey;
 }
