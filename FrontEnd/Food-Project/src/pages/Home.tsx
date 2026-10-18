@@ -50,13 +50,37 @@ function Home() {
                 </div>
                 <div className="foodcard-stack">
                     <div className="card1">
-                        <FoodCard/>
+                        <FoodCard 
+                            title='Chocolate Chip Cookies'
+                            image_url=''
+                            rating={4.5} 
+                            total_time={5.372846293} 
+                            servings='16 servings' 
+                            missing_ingredients={2} 
+                            pantry_ratio= {0.9}
+                            recipe_id={5}/>
                     </div>
                     <div className="card2">
-                        <FoodCard/>
+                        <FoodCard
+                            title='Chocolate Chip Cookies'
+                            image_url=''
+                            rating={4} 
+                            total_time={5.372846293} 
+                            servings='16 servings' 
+                            missing_ingredients={2} 
+                            pantry_ratio= {0.9}
+                            recipe_id={5}/>
                     </div>
                     <div className="card3">
-                        <FoodCard/>
+                        <FoodCard
+                            title='Chocolate Chip Cookies'
+                            image_url=''
+                            rating={4} 
+                            total_time={5.372846293} 
+                            servings='16 servings' 
+                            missing_ingredients={2} 
+                            pantry_ratio= {0.9}
+                            recipe_id={5}/>
                     </div>
                 </div>
             </div>
@@ -64,7 +88,7 @@ function Home() {
             {/* Bottom section --- Scrollytelling */}
             {/* <Scrollytelling.Root debug={{ label: "phone" }}> */}
             <Scrollytelling.Root>
-                <Scrollytelling.Pin childHeight={"100vh"} pinSpacerHeight={'700vh'} top={0}>
+                <Scrollytelling.Pin childHeight={"100vh"} pinSpacerHeight={'650vh'} top={0}>
                     <div className="relative w-full h-[100vh] overflow-hidden">
                         
                         {/* State 1: Intro / How it works */}
