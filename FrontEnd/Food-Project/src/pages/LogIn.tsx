@@ -1,7 +1,17 @@
+// @ts-ignore
+import "../css/LogIn.css";
+
 function LogIn() {
+
+
     return (
-        <div>LogIn</div>
-    )
+        <div className="page">
+            <div>
+                LogIn
+            </div>
+
+        </div>
+    );
 }
 
-export default LogIn
+export default LogIn;
