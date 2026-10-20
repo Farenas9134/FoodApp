@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { ComponentProps } from "react";
 
 function SignUp() {
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const[confirmPassword, setConfirmPassword] = useState("");
@@ -18,6 +19,7 @@ function SignUp() {
         e.preventDefault();
         setError("");
 
+        // Ensuring passwords match
         if (password !== confirmPassword) {
             setError("Passwords do not match.");
             return;
@@ -33,6 +35,7 @@ function SignUp() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
+                    name,
                     email, 
                     password
                 }),
@@ -44,7 +47,8 @@ function SignUp() {
                 setError(data.message || "Unable to create an account, please try again later.");
                 return;
             }
-
+            
+            // Redirecting to login page following a successful signup
             window.location.href = "/login";
         
         } catch {
@@ -58,6 +62,18 @@ function SignUp() {
         <form onSubmit={handleSubmit}>
         <h1>Create an account</h1>
 
+        {/* Username Field */}
+        <label htmlFor="name">Username</label>
+        <input
+            id="name"
+            type="name"
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+        />
+
+        {/* Email Field */}
         <label htmlFor="email">Email</label>
         <input
             id="email"
@@ -68,6 +84,7 @@ function SignUp() {
             required
         />
 
+        {/* Password Field */}
         <label htmlFor="password">Password</label>
         <input
             id="password"
@@ -78,7 +95,8 @@ function SignUp() {
             minLength={8}
             required
         />
-
+        
+        {/* Confirm Password Field */}
         <label htmlFor="confirmPassword">
             Confirm password
         </label>
@@ -105,4 +123,4 @@ function SignUp() {
     );
 }
 
-export default SignUp
+export default SignUp;
