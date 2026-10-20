@@ -13,7 +13,7 @@ def create_ingredient():
     # Grab data from request/url
     data = request.get_json()
     # Edge Case check - No inpute
-    if not data: return jsonify({"error":"Missing JSON body"}), 400
+    if not data: return jsonify({"error":"Missing JSON body", "details":"None"}), 400
 
     # Establish non-negotioable fields needed to create ingredient
     required_fields = set(Ingredient.__table__.columns.keys()) - {'id', 'is_verified', 'is_deleted', 'created_by'}
@@ -22,14 +22,14 @@ def create_ingredient():
     for field in required_fields:
         if field not in data:
             missing.append(field)
-    if missing: return jsonify({"error": "Missing required fields", "missing":missing}), 400
+    if missing: return jsonify({"error": "Missing required fields", "details":f'Missing the following: {missing}'}), 400
 
     # Check if ingredient already exists
     # Name works for now, but need to differentiate btw Generic/Name Brand/Homemade/etc.
     stmt = select(Ingredient).filter_by(name=data["name"])
     existing_recipe = db.session.scalars(stmt).first()
 
-    if existing_recipe: return jsonify({"error": "Ingredient already exists in our database!"}), 400
+    if existing_recipe: return jsonify({"error": "Ingredient already exists in our database!", "details":"None"}), 400
 
     user_id = current_user.user_id
     new_ingredient = Ingredient(created_by=user_id)
@@ -83,7 +83,7 @@ def get_ingredient(ingredient_id):
     ingredient = db.session.scalars(stmt).first()
 
     if not ingredient:
-        return jsonify({"error":"Ingredient not found!"}), 404
+        return jsonify({"error":"Ingredient not found!", "details":"None"}), 404
     
     return jsonify({'ingredient': ingredient.to_dict()}), 200
 
@@ -93,17 +93,17 @@ def edit_ingredient(ingredient_id):
     user_id = current_user.user_id
     data = request.get_json()
     if not data:
-        return jsonify({'error':'No data provided'}), 400
+        return jsonify({'error':'No data provided', "details":"None"}), 400
     
     ingredient = Ingredient.query.get_or_404(ingredient_id, "error: Ingredient ID does not exist!")
 
     # Check if ingredient is a staple/essential ingredient
     if ingredient.is_verified:
-        return jsonify({"error": "Only admin can edit this ingredient"}), 400
+        return jsonify({"error": "Only admin can edit this ingredient", "details":"None"}), 400
 
     # Check if ingredient submitted by user
     if user_id != ingredient.created_by:
-        return jsonify({'error': 'Only user who submitted this ingredient can change it.'}), 400
+        return jsonify({'error': 'Only user who submitted this ingredient can change it.', "details":"None"}), 400
 
     mutable_i_field = set(Ingredient.__table__.columns.keys()) - {'id', 'is_verified', 'created_by'}
 
@@ -117,14 +117,14 @@ def edit_ingredient(ingredient_id):
                     )
                     existing = db.session.scalars(stmt).first()
                     if existing:
-                        return jsonify({'error': f"{field.replace('_', '').title()} already taken"}), 400
+                        return jsonify({'error': f"{field.replace('_', '').title()} already taken", "details":"None"}), 400
                 setattr(ingredient, field, value)
 
         db.session.commit()
         return jsonify({'message': "Sucessfully changed this ingredient", 'ingredient':ingredient.to_dict()}), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e), "details":"None"}), 500
 
 @ingredient_bp.route('/ingredients/search', methods=['GET'])
 def search_ingredients():

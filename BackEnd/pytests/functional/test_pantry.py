@@ -8,11 +8,11 @@ def test_get_pantry(test_client, make_user):
     """
     make_user()
     login_info = {'email':'easy@email.com', 'password':'easy'}
-    login_res = test_client.post('/login', json=login_info)
-    assert login_res.status_code == 201
+    login_res = test_client.post('/api/login', json=login_info)
+    assert login_res.status_code == 200
 
-    res = test_client.get('/pantry')
-    assert res.status_code == 201
+    res = test_client.get('/api/pantry')
+    assert res.status_code == 200
     assert b'pantry' in res.data
 
 def test_add_to_pantry(test_client, make_recipe):
@@ -23,17 +23,17 @@ def test_add_to_pantry(test_client, make_recipe):
     """
     # Add ingredients into DB
     recipe_res = make_recipe()
-    assert recipe_res.status_code == 201
+    assert recipe_res.status_code == 200
 
     pantry_info = {
         'ingredients':[1,2,3]
     }
 
-    res = test_client.post('/pantry', json=pantry_info)
-    pantry_display = test_client.get('/pantry')
+    res = test_client.post('/api/pantry', json=pantry_info)
+    pantry_display = test_client.get('/api/pantry')
 
-    assert pantry_display.status_code == 201
-    assert res.status_code == 201
+    assert pantry_display.status_code == 200
+    assert res.status_code == 200
     assert 'Successfully added 3 ingredients into User Pantry' in res.json['message']
 
 @pytest.mark.parametrize("data, expected_status, expected_error", [
@@ -50,17 +50,17 @@ def test_add_to_pantry(test_client, make_recipe):
 def test_add_to_pantry_errors(test_client, make_recipe, data, expected_status, expected_error):
     # Add ingredients into DB
     recipe_res = make_recipe()
-    assert recipe_res.status_code == 201
+    assert recipe_res.status_code == 200
 
     # Add 1 ingredient to pantry
     pantry_info = {
             'ingredients':[1]
         }
     
-    res = test_client.post('/pantry', json=pantry_info)
-    assert res.status_code == 201
+    res = test_client.post('/api/pantry', json=pantry_info)
+    assert res.status_code == 200
 
-    res = test_client.post('/pantry', json=data)
+    res = test_client.post('/api/pantry', json=data)
     assert res.status_code == expected_status
     # searches to res.data need byte encoded strings, but can't apply both b & f to string so used encode()
     assert f'{expected_error}'.encode('utf-8') in res.data
@@ -68,17 +68,17 @@ def test_add_to_pantry_errors(test_client, make_recipe, data, expected_status, e
 def test_remove_from_pantry(test_client, make_and_add_user_pantry):
     # Add ingredients into DB
     add_res = make_and_add_user_pantry()
-    assert add_res.status_code == 201
+    assert add_res.status_code == 200
 
     # Delete 2 ingredients from pantry
     data = {'ingredients':[1,2]}
-    res = test_client.delete('/pantry', json=data)
+    res = test_client.delete('/api/pantry', json=data)
     assert res.status_code == 200
     assert 'Successfully removed given ingredients from pantry' in res.json['message']
 
 def test_pantry_fixture(make_and_add_user_pantry):
     res = make_and_add_user_pantry()
-    assert res.status_code == 201
+    assert res.status_code == 200
 
 @pytest.mark.parametrize("data, expected_status, expected_error", [
     # Case 1: Invalid JSON body
@@ -92,19 +92,19 @@ def test_pantry_fixture(make_and_add_user_pantry):
 ])
 def test__remove_from_pantry_cases(test_client, make_and_add_user_pantry, data, expected_status, expected_error):
     initial_res = make_and_add_user_pantry()
-    assert initial_res.status_code == 201
+    assert initial_res.status_code == 200
 
-    res = test_client.delete('/pantry', json=data)
+    res = test_client.delete('/api/pantry', json=data)
     assert res.status_code == expected_status
     assert f'{expected_error}'.encode('utf-8') in res.data
 
 def test_pantry_match(test_client, make_and_add_user_pantry, capsys):
     # Setup pantry (adds first 5 ingredients of inner make_recipe() to pantry)
     initial_res = make_and_add_user_pantry()
-    assert initial_res.status_code == 201
+    assert initial_res.status_code == 200
 
     # Query pantry match with low threshold (%10)
-    res = test_client.get('/pantry-match?min_match_percentage=0.1')
+    res = test_client.get('/api/pantry-match?min_match_percentage=0.1')
     assert res.status_code == 200
 
     data = res.get_json()
@@ -122,6 +122,6 @@ def test_pantry_match(test_client, make_and_add_user_pantry, capsys):
     assert match_info['match_percentage'] == 50.0
 
     # Query with high threshold -> shouldn't match
-    res = test_client.get('/pantry-match?min_match_percentage=1.0')
+    res = test_client.get('/api/pantry-match?min_match_percentage=1.0')
     assert res.status_code == 200
     assert len(res.get_json()['recipes_matched']) == 0

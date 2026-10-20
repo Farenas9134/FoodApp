@@ -19,7 +19,7 @@ def safe_parse_amounts(raw_quantity):
         # Parse_ingredient() likely returned non-numeric string as the amount
         return 1.0, str(raw_quantity)
 
-@recipes_db.route('/recipes-submit', methods=["POST"])
+@recipes_db.route('/recipes', methods=["POST"])
 @login_required
 def submit_recipe():
      data = request.get_json()
@@ -128,7 +128,7 @@ def submit_recipe():
      return jsonify({
           "message":"Recipe created successfully",
           "recipe": new_recipe.to_dict()
-     }), 201
+     }), 200
 
 @recipes_db.route('/recipes', methods=["GET"])
 def get_recipes():
@@ -214,12 +214,12 @@ def update_recipe(recipe_id):
      data = request.get_json()
 
      if not isinstance(data, dict):
-          return jsonify({'error':'Request body must be valid JSON'}), 400
+          return jsonify({'error':'Request body must be valid JSON', "details":"Refer to documentation for proper usage"}), 400
 
      recipe = Recipe.query.get_or_404(recipe_id, "error: recipe does not exist!")
 
      if recipe.submitted_by != user_id:
-          return jsonify({'error': 'User did not create recipe.'}), 403
+          return jsonify({'error': 'User did not create recipe.', "details":"Refer to documentation for proper usage"}), 403
 
      mutable_recipe_fields = set(Recipe.__table__.columns.keys()) - {'recipe_id', 'created_at', 'last_updated'} | {'recipe_ingredients'}
 
@@ -303,7 +303,7 @@ def update_recipe(recipe_id):
                     # Check if given update value is appropriate
                     if value is not None and not isinstance(value, expected_type):
                          return jsonify({
-                              "error":f"Invalid data type for '{field}'. Expected {expected_type.__name__}, got {type(value).__name__} instead."
+                              "error":f"Invalid data type for '{field}'", "details":f"Expected {expected_type.__name__}, got {type(value).__name__} instead."
                          }), 400
 
                     # Check for duplicates on prev. unique fields in Recipe class
@@ -314,7 +314,7 @@ def update_recipe(recipe_id):
                          )
                          existing = db.session.scalars(stmt).first()
                          if existing:
-                              return jsonify({'error':f'{field.replace("_"," ").title()} already taken'}), 400
+                              return jsonify({'error':f'{field.replace("_"," ").title()} already taken', "details":"Refer to documentation for proper usage"}), 400
 
                     # Else, just set field attribute to recipe
                     setattr(recipe, field, value)
@@ -331,7 +331,7 @@ def update_recipe(recipe_id):
 
      except Exception as e:
           db.session.rollback()
-          return jsonify({'error':str(e)}), 500
+          return jsonify({'error':str(e), "details":"Refer to documentation for proper usage"}), 500
 
 @recipes_db.route('/recipes/<int:recipe_id>', methods=['DELETE'])
 @login_required
@@ -340,7 +340,7 @@ def delete_recipe(recipe_id):
      user_id = current_user.user_id
 
      if user_id != recipe.submitted_by:
-          return jsonify({'error': 'User did not submit this recipe. Cannot delete it.'}), 401
+          return jsonify({'error': 'User did not submit this recipe. Cannot delete it.', "details":"Refer to documentation for proper usage"}), 403
 
      try:
           db.session.delete(recipe)
@@ -349,7 +349,7 @@ def delete_recipe(recipe_id):
           return jsonify({'message': 'Recipe deleted successfully'}), 200
      except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e), "details":"Refer to documentation for proper usage"}), 500
 
 @recipes_db.route('/recipes/recent', methods=["GET"])
 def get_recent_recipes():

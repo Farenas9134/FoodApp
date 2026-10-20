@@ -12,7 +12,7 @@ def signup_post():
     data = request.get_json(silent=True)
 
     if not isinstance(data, dict): 
-        return jsonify({"error": "Request body must be valid JSON"}), 400
+        return jsonify({"error": "Request body must be valid JSON", "details":"Refer to documentation for proper usage"}), 400
 
     email = data.get("email")
     name = data.get("name")
@@ -20,7 +20,7 @@ def signup_post():
 
     if not email or not password or not name:
         return jsonify({
-            "error":"Missing required fields"
+            "error":"Missing required fields", "details":"Refer to documentation for proper usage"
         }), 400
 
     """
@@ -46,7 +46,7 @@ def signup_post():
         db.session.commit()
     except:
         db.session.rollback()
-        return jsonify({"error": "Email attached to existing user."}), 400
+        return jsonify({"error": "Email attached to existing user.", "details":"Refer to documentation for proper usage"}), 400
 
     # return successful json message
     return jsonify({

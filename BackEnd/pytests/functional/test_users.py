@@ -7,10 +7,10 @@ def test_user_homepage(test_client, make_user):
     '''
     make_user(name='PyTester', email="easy@email.com", password="Pie")
     login_info = {"email":"easy@email.com", "password":"Pie"}
-    login_response = test_client.post('/login', json=login_info)
-    assert login_response.status_code == 201
+    login_response = test_client.post('/api/login', json=login_info)
+    assert login_response.status_code == 200
 
-    response = test_client.get('/user')
+    response = test_client.get('/api/user')
     assert response.status_code == 200
     assert 'hello PyTester' in response.json['message']
 
@@ -24,11 +24,11 @@ def test_user_recipes(test_client, make_user):
     """
     make_user()
     login_info = {"email":"easy@email.com", "password":"easy"}
-    login_res = test_client.post('/login', json=login_info)
+    login_res = test_client.post('/api/login', json=login_info)
 
-    assert login_res.status_code == 201
+    assert login_res.status_code == 200
 
-    res = test_client.get('/user/recipes')
+    res = test_client.get('/api/user/recipes')
 
     assert res.status_code == 200
     assert 'total' in res.json

@@ -12,7 +12,7 @@ def test_sign_up(test_client):
         "password": "passwordsrule"
     }
 
-    response = test_client.post('/signup', json=data)
+    response = test_client.post('/api/signup', json=data)
 
     assert response.status_code == 201
     assert "User created successfully" in response.json['message']
@@ -41,7 +41,7 @@ def test_sign_up_missing_fields_validation(test_client, data, expected_status, e
     WHEN signing up as a user 
     THEN throw an error for missing data
     """
-    response = test_client.post('/signup', json=data)
+    response = test_client.post('/api/signup', json=data)
     
     assert response.status_code == expected_status
     assert expected_error in response.json['error']
@@ -57,8 +57,8 @@ def test_identical_email_on_signup(test_client):
         "email":"email@email.com",
         "password":"pass"
     }
-    test_client.post('/signup', json=data)
-    response = test_client.post('/signup', json=data)
+    test_client.post('/api/signup', json=data)
+    response = test_client.post('/api/signup', json=data)
 
     assert response.status_code == 400
     assert "Email attached to existing user" in response.json['error']
@@ -73,9 +73,9 @@ def test_sign_in(test_client, make_user):
     make_user(name="LogMeIn", email="LogMe@In.com", password="LogMeIn")
     data = {"email":"LogMe@In.com", "password":"LogMeIn"}
 
-    response = test_client.post('/login', json=data)
+    response = test_client.post('/api/login', json=data)
 
-    assert response.status_code == 201
+    assert response.status_code == 200
     assert "Successful login" in response.json['message']
 
 # Set of Parametrized tests for no repeated code to test each individually
@@ -96,7 +96,7 @@ def test_invalid_json_input_login(test_client, data, expected_status, expected_e
     WHEN logging in
     THEN throw an error for missing data
     """
-    response = test_client.post('/login', json=data)
+    response = test_client.post('/api/login', json=data)
 
     assert response.status_code == expected_status
     assert expected_error in response.json['error']
@@ -112,7 +112,7 @@ def test_invalid_email_login(test_client):
         "password":"DNE"
     }
 
-    response = test_client.post('/login', json=data)
+    response = test_client.post('/api/login', json=data)
 
     assert response.status_code == 400
     assert 'Nonexisting user, please sign up first' in response.json['error']
@@ -129,7 +129,7 @@ def test_invalid_password_login(test_client, make_user):
         "password":"WrongPassword"
     }
 
-    response = test_client.post('/login', json=data)
+    response = test_client.post('/api/login', json=data)
 
     assert response.status_code == 400
     assert "Incorrect password, please try again" in response.json['error']
@@ -146,12 +146,12 @@ def test_logout(test_client, make_user):
         "password":"easy"
     }
 
-    login_response = test_client.post('/login', json=login_info)
-    assert login_response.status_code == 201
+    login_response = test_client.post('/api/login', json=login_info)
+    assert login_response.status_code == 200
 
-    logout_response = test_client.get('/logout')
+    logout_response = test_client.get('/api/logout')
 
-    assert logout_response.status_code == 201
+    assert logout_response.status_code == 200
     assert "Successful logout" in logout_response.json['message']
 
 # Need Forgot-Password, Reset-Password tests

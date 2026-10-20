@@ -151,5 +151,4 @@ def logout():
     logout_user()
     return jsonify({
         "message":"Successful logout"
-    }), 201
-    # return redirect(url_for('main.home'))
+    }), 200

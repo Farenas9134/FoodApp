@@ -20,7 +20,7 @@ def get_user():
 @login_required
 def get_user_recipes():
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('page', 10, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
 
     # Join Recipe and SavedRecipes, filtering by the current logged-in user
     pagination = (
@@ -61,7 +61,7 @@ def delete_recipe(recipe_id):
     saved_recipe = SavedRecipes.query.filter_by(user_id=current_user.user_id, recipe_id=recipe_id).first()
 
     if not saved_recipe:
-        return jsonify({'error': 'Recipe not previously saved, cannot delete.'}), 404
+        return jsonify({'error': 'Recipe not previously saved, cannot delete.', "details":"Refer to documentation for proper usage"}), 404
     
     try:
         db.session.delete(saved_recipe)
@@ -70,7 +70,7 @@ def delete_recipe(recipe_id):
     
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e), "details":"Refer to documentation for proper usage"}), 500
 
 @user_bp.route('/user', methods=['DELETE'])
 @login_required
@@ -95,17 +95,17 @@ def delete_user_profile():
         }), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e), "details":"Refer to documentation for proper usage"}), 500
 
 @user_bp.route('/user/follow/<user_id>', methods=['POST'])
 @login_required
 def follow_user(user_id):
     user = db.session.scalar(sa.select(User).where(User.user_id == user_id))
     if user is None:
-        return jsonify({'error': f'User id {user_id} not found.'}), 401
+        return jsonify({'error': f'User id {user_id} not found.', "details":"Refer to documentation for proper usage"}), 401
 
     if user == current_user:
-        return jsonify({'error': 'You cannot follow yourself!'}), 401
+        return jsonify({'error': 'You cannot follow yourself!', "details":"Refer to documentation for proper usage"}), 401
 
     current_user.follow(user)
     db.session.commit()
@@ -117,10 +117,10 @@ def follow_user(user_id):
 def unfollow_user(user_id):
     user = db.session.scalar(sa.select(User).where(User.user_id == user_id))
     if user is None:
-        return jsonify({'error': f'User id {user_id} not found.'}), 401
+        return jsonify({'error': f'User id {user_id} not found.', "details":"Refer to documentation for proper usage"}), 401
 
     if user == current_user:
-        return jsonify({'error': 'You cannot unfollow yourself!'}), 401
+        return jsonify({'error': 'You cannot unfollow yourself!', "details":"Refer to documentation for proper usage"}), 401
 
     current_user.unfollow(user)
     db.session.commit()

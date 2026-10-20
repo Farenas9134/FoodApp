@@ -85,7 +85,7 @@ def make_recipe(test_client, make_user):
     ):
         make_user(email=user_email, password="easy")
         login_info = {"email":user_email, "password":"easy"}
-        test_client.post('/login', json=login_info)
+        test_client.post('/api/login', json=login_info)
 
         recipe_data = {
             'title':title,
@@ -104,7 +104,7 @@ def make_recipe(test_client, make_user):
             'servings': servings
         }
 
-        response = test_client.post('/recipes-submit', json=recipe_data)
+        response = test_client.post('/api/recipes', json=recipe_data)
         return response
     return _make_recipe
 
@@ -117,6 +117,6 @@ def make_and_add_user_pantry(test_client, make_recipe):
         data = {
             'ingredients':[1,2,3,4,5]
         }
-        res = test_client.post('/pantry', json=data)
+        res = test_client.post('/api/pantry', json=data)
         return res
     return _make_and_add_user_pantry

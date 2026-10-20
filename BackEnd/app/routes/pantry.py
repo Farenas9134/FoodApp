@@ -27,9 +27,9 @@ def get_user_pantry():
 
         return jsonify({
             'pantry': [item.to_dict() for item in pantry_items]
-        }), 201
+        }), 200
     except Exception as e:
-        return jsonify({'error':str(e)}), 500
+        return jsonify({'error':str(e), "details":"Refer to documentation for proper usage"}), 500
 
 @user_pantry_bp.route('/pantry', methods=['POST'])
 @login_required
@@ -37,12 +37,12 @@ def add_to_user_pantry():
     """Adds a set of ingredient ids into the User's pantry"""
     data = request.get_json()
     if not isinstance(data, dict):
-        return jsonify({'error':'Request body must be valid JSON'}), 400
+        return jsonify({'error':'Request body must be valid JSON', "details":"Refer to documentation for proper usage"}), 400
 
     # grab ing id's from data
     ing_list = data.get('ingredients')
     if not ing_list:
-        return jsonify({'message':'No ingredients provided'}), 200
+        return jsonify({'message':'No ingredients provided', "details":"Refer to documentation for proper usage"}), 200
 
     try:
         # Fetch all requested ingredients that exist and are visible to user
@@ -53,7 +53,7 @@ def add_to_user_pantry():
         valid_ing_ids = {ing.id for ing in valid_ingredients}
 
         if not valid_ing_ids:
-            return jsonify({'error':'None of the provided ingredients are valid'}), 400
+            return jsonify({'error':'None of the provided ingredients are valid', "details":"Refer to documentation for proper usage"}), 400
 
         # Grab all exisiting ingredients in pantry
         stmt = select(UserPantry.ingredient_id).where(
@@ -79,7 +79,7 @@ def add_to_user_pantry():
 
         return jsonify({
             'message': f'Successfully added {len(ids_to_add)} ingredients into User Pantry'
-        }), 201
+        }), 200
     
     except Exception as e:
         db.session.rollback()
@@ -129,7 +129,7 @@ def close_this():
 
     #         return jsonify({
     #             'message':'Successfully added ingredients into User Pantry'
-    #         }), 201
+    #         }), 200
         
     #     except Exception as e:
     #         db.session.rollback()
@@ -144,7 +144,7 @@ def remove_from_user_pantry():
     """Removes a set of ingredient ids from User's pantry"""
     data = request.get_json()
     if not isinstance(data, dict):
-        return jsonify({'error':'Request body must be valid JSON'}), 400
+        return jsonify({'error':'Request body must be valid JSON', "details":"Refer to documentation for proper usage"}), 400
 
     # grab ing id's from data
     ing_list = data.get('ingredients')
@@ -187,9 +187,7 @@ def remove_from_user_pantry():
 @login_required
 def get_pantry_matched_recipes():
     """Finds and ranks recipes based on a user's pantry contents"""
-    # Check query args first, then check any JSON body if given, then default to 0.8 if all else fails
-    json_data = request.get_json(silent=True) or {}
-    raw_percentage = request.args.get('min_match_percentage') or json_data.get('min_match_percentage', 0.8)
+    raw_percentage = request.args.get('min_match_percentage')
 
     # If wrong input, just default to 0.8
     try:

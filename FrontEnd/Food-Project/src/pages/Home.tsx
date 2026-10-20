@@ -19,6 +19,7 @@ import link from "../assets/icons/link.svg";
 // @ts-ignore
 import Rarrow from "../assets/icons/Arrow-R.svg";
 
+
 // @ts-ignore
 import "../css/home.css";
 

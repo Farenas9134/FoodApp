@@ -46,24 +46,24 @@ def create_app(test_config=None):
 
     # Register blueprints
     from .routes.main import main_bp
-    app.register_blueprint(main_bp)
+    app.register_blueprint(main_bp, url_prefix='/api')
 
     from .routes.signup import signup_db
-    app.register_blueprint(signup_db)
+    app.register_blueprint(signup_db, url_prefix='/api')
 
     from .routes.login import login_bp
-    app.register_blueprint(login_bp)
+    app.register_blueprint(login_bp, url_prefix='/api')
 
     from .routes.recipes import recipes_db
-    app.register_blueprint(recipes_db)
+    app.register_blueprint(recipes_db, url_prefix='/api')
 
     from .routes.user import user_bp
-    app.register_blueprint(user_bp)
+    app.register_blueprint(user_bp, url_prefix='/api')
 
     from .routes.ingredients import ingredient_bp
-    app.register_blueprint(ingredient_bp)
+    app.register_blueprint(ingredient_bp, url_prefix='/api')
 
     from .routes.pantry import user_pantry_bp
-    app.register_blueprint(user_pantry_bp)
+    app.register_blueprint(user_pantry_bp, url_prefix='/api')
 
     return app

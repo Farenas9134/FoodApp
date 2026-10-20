@@ -1,5 +1,4 @@
-from FoodApp.BackEnd.app.recipe_extraction import recipe_extraction_recipe_scrapers
-from app import create_app
+from app.recipe_extraction import recipe_extraction_recipe_scrapers
 import pytest
 
 '''
@@ -13,7 +12,7 @@ def test_get_recipes_with_fixture(test_client):
     WHEN the '/recipes' page is requested (GET)
     THEN check that the response is valid
     """
-    response = test_client.get('/recipes')
+    response = test_client.get('/api/recipes')
     assert response.status_code == 200
     assert b"current_page" in response.data
     assert b"recipe" in response.data
@@ -27,14 +26,14 @@ def test_extraction_and_submit_recipe(test_client, make_user):
     """
     make_user()
     login_info = {"email":"easy@email.com", "password":"easy"}
-    login_response = test_client.post('/login', json=login_info)
-    assert login_response.status_code == 201
+    login_response = test_client.post('/api/login', json=login_info)
+    assert login_response.status_code == 200
 
     recipe = recipe_extraction_recipe_scrapers.extract_recipe("https://www.americastestkitchen.com/recipes/16181-ancho-rubbed-flank-steak-and-cilantro-rice-with-avocado-sauce")
 
     # Submit recipe
-    response = test_client.post('/recipes-submit', json=recipe)
-    assert response.status_code == 201, f"Route failed with response {response.get_data(as_text=True)}"
+    response = test_client.post('/api/recipes', json=recipe)
+    assert response.status_code == 200, f"Route failed with response {response.get_data(as_text=True)}"
     assert 'Recipe created successfully' in response.json['message']
     assert 'Steak and Cilantro Rice' in response.json['recipe']['title']
 
@@ -47,8 +46,8 @@ def test_submit_recipe(test_client, make_user):
     # Successfully log in as a user
     make_user()
     login_info = {"email":"easy@email.com", "password":"easy"}
-    login_response = test_client.post('/login', json=login_info)
-    assert login_response.status_code == 201
+    login_response = test_client.post('api/login', json=login_info)
+    assert login_response.status_code == 200
 
     # Create recipe data
     recipe_data = {
@@ -82,8 +81,8 @@ def test_submit_recipe(test_client, make_user):
     }
 
     # Submit recipe
-    response = test_client.post('/recipes-submit', json=recipe_data)
-    assert response.status_code == 201, f"Route failed with response {response.get_data(as_text=True)}"
+    response = test_client.post('api/recipes', json=recipe_data)
+    assert response.status_code == 200, f"Route failed with response {response.get_data(as_text=True)}"
     assert 'Recipe created successfully' in response.json['message']
     assert 'Cookies' in response.json['recipe']['title']
 
@@ -94,7 +93,7 @@ def test_recipe_fixture(make_recipe):
     THEN successfully add a recipe to the DB
     """
     response = make_recipe()
-    assert response.status_code == 201
+    assert response.status_code == 200
 
 def test_same_recipe_title(make_recipe):
     """
@@ -145,10 +144,10 @@ def test_recipe_submit_edge_cases(test_client, data, expected_status, expected_e
     """
     make_user(email="logmein@gmail.com", password="easy")
     login_info = {'email':'logmein@gmail.com', 'password':'easy'}
-    login_res = test_client.post('/login', json=login_info)
-    assert login_res.status_code == 201
+    login_res = test_client.post('/api/login', json=login_info)
+    assert login_res.status_code == 200
 
-    recipe_res = test_client.post('recipes-submit', json=data)
+    recipe_res = test_client.post('api/recipes', json=data)
     assert recipe_res.status_code == expected_status
     assert expected_error in recipe_res.json['error']
 
@@ -162,15 +161,15 @@ def test_get_recipes(test_client, make_user, make_recipe):
     # Honestly didn't need to make a user, because make_recipes() handles that, but good practice
     make_user()
     login_info = {"email":"easy@email.com", "password":"easy"}
-    login_response = test_client.post('/login', json=login_info)
-    assert login_response.status_code == 201
+    login_response = test_client.post('/api/login', json=login_info)
+    assert login_response.status_code == 200
 
     # Submit a recipe with user (just changing default email to the one we used above)
     recipe_response = make_recipe(user_email='easy@gmail.com')
-    assert recipe_response.status_code == 201
+    assert recipe_response.status_code == 200
 
     # Now request recipes with 1 recipe in DB
-    response = test_client.get('/recipes')
+    response = test_client.get('/api/recipes')
 
     assert response.status_code == 200
     assert b'recipes' in response.data
@@ -185,9 +184,9 @@ def test_get_recipe_by_id(test_client, make_recipe, capsys):
     THEN return wanted recipe details
     """
     recipe_res = make_recipe()
-    assert recipe_res.status_code == 201
+    assert recipe_res.status_code == 200
 
-    res = test_client.get('/recipes/1')
+    res = test_client.get('/api/recipes/1')
     assert res.status_code == 200
     assert b'recipe' in res.data
     assert b'ingredients' in res.data
@@ -206,7 +205,7 @@ def test_get_recipe_by_invalid_id(test_client):
     THEN return a 404 error
     """
 
-    res = test_client.get('/recipes/1')
+    res = test_client.get('/api/recipes/1')
     assert res.status_code == 404
     assert b'Recipe does not exist' in res.data
 
@@ -227,10 +226,10 @@ def test_delete_recipe(test_client, make_recipe):
     """
     # Create recipe
     recipe_res = make_recipe()
-    assert recipe_res.status_code == 201
+    assert recipe_res.status_code == 200
 
     # Delete recipe
-    res = test_client.delete('/recipes/1')
+    res = test_client.delete('/api/recipes/1')
     assert res.status_code == 200
     assert 'Recipe deleted successfully' in res.json['message']
 
@@ -239,7 +238,7 @@ def test_delete_recipe(test_client, make_recipe):
     assert double_check_res.status_code == 404
 
     # Check if recipeIngredients exist (None should exist)
-    ing_res = test_client.get('/recipeIng')
+    ing_res = test_client.get('/api/recipeIng')
     assert ing_res.status_code == 200
 
 def test_delete_recipe_invalid_auth(test_client, make_recipe, make_user):
@@ -250,17 +249,17 @@ def test_delete_recipe_invalid_auth(test_client, make_recipe, make_user):
     """
     # Create recipe
     recipe_res = make_recipe()
-    assert recipe_res.status_code == 201
+    assert recipe_res.status_code == 200
 
     # Make new user
     make_user(email="newUser@gmail.com")
     login_info = {'email':'newUser@gmail.com', 'password':'easy'}
-    login_response = test_client.post('/login', json=login_info)
-    assert login_response.status_code == 201
+    login_response = test_client.post('/api/login', json=login_info)
+    assert login_response.status_code == 200
 
     # Attempt to delete recipe
-    res = test_client.delete('/recipes/1')
-    assert res.status_code == 401
+    res = test_client.delete('/api/recipes/1')
+    assert res.status_code == 403
     assert 'User did not submit this recipe' in res.json['error']
 
 def test_update_recipe(test_client, make_recipe, capsys):
@@ -271,7 +270,7 @@ def test_update_recipe(test_client, make_recipe, capsys):
     """
     # Create recipe
     recipe_res = make_recipe()
-    assert recipe_res.status_code == 201
+    assert recipe_res.status_code == 200
 
     # Need to include all prev. ings. or it'll think you meant to remove/delete that ing 
     new_recipe_info = {
@@ -292,7 +291,7 @@ def test_update_recipe(test_client, make_recipe, capsys):
         ]
     }
     # Update recipe
-    res = test_client.put('/recipes/1', json=new_recipe_info)
+    res = test_client.put('/api/recipes/1', json=new_recipe_info)
     assert res.status_code == 200
     assert b'Changed You!' in res.data
     assert b'Instagram' in res.data
