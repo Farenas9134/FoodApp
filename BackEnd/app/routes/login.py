@@ -1,5 +1,5 @@
 import secrets
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import login_user, login_required, logout_user
 from sqlalchemy import select
 from ..models import User
@@ -21,6 +21,7 @@ def login_post():
 
     data = request.get_json()
 
+    # Check valid JSON format
     if not isinstance(data, dict): 
         return jsonify({
             "error": "Request body must be valid JSON"
@@ -31,19 +32,23 @@ def login_post():
     # Check whether or not user wants to be remembered and not have to login again when reopening page
     # remember = bool(request.form.get('remember'))
 
+    # If email or password are missing
     if not email or not password:
         return jsonify({
             "error": "Missing either email or password"
         }), 400
 
+    # Querying the database using the email inputted
     stmt = select(User).filter_by(email=email)
     existing_user = db.session.scalars(stmt).first()
 
+    # Checking to see if a user does not exist in the database with that email
     if not existing_user:
         return jsonify({
             "error": "Nonexisting user, please sign up first"
         }), 400
 
+    # Checking to see if a user with that email already exists in the database
     if not check_password_hash(existing_user.password, password):
         return jsonify({
             "error":"Incorrect password, please try again"
@@ -51,10 +56,14 @@ def login_post():
 
     # remember default true for testing
     login_user(existing_user, remember=True)
+
+    # Starting a new session 
+    session.clear()
+    session["user_id"] = existing_user.get_id()
     
     return jsonify({
         "message":"Successful login"
-    }), 201
+    }), 200
 
 '''
 Sends a password reset link to a user's email

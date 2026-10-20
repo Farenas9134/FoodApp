@@ -11,4 +11,9 @@ flask db migrate -m "comments"
 
 flask --app run.py db upgrade
 
+Run React:
+
+Navigate from the root to FrontEnd and then Food-Project (FoodApp\FrontEnd\Food-Project)
+
+npm run dev
 ---

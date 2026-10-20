@@ -3,6 +3,7 @@ import NavBar from "./components/UI/NavBar";
 import Home from "./pages/Home";
 import SignUp from "./pages/SignUp";
 import LogIn from "./pages/LogIn";
+import Recipes from "./pages/Recipes";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<Home/>} />
           <Route path="/signup" element={<SignUp/>} />
           <Route path="/login" element={<LogIn/>} />
+          <Route path="/recipes" element={<Recipes/>} />
           {/* <Route path="*" element={<NotFoundPage />}/> */}
         </Routes>
       </BrowserRouter>
