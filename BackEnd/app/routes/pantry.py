@@ -251,7 +251,7 @@ def get_pantry_matched_recipes():
     # Format results to add in match info
     formatted_results = []
     for recipe, total_req, total_match in results:
-        recipe_data = recipe.to_dict(mode=2)
+        recipe_data = recipe.to_dict()
         recipe_data['match_info'] = {
             'total_required':total_req,
             'total_matched':total_match,

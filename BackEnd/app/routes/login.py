@@ -9,10 +9,6 @@ from datetime import datetime, timedelta, timezone
 
 login_bp = Blueprint('login', __name__, template_folder='templates')
 
-@login_bp.route('/login')
-def login():
-    return render_template('login.html')
-
 '''
 Gets a user's username and password, queries the user database to determine whether the user has signed up; if yes, successful login follows
 '''

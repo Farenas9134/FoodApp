@@ -1,4 +1,5 @@
 from flask import Flask
+from flask import jsonify
 from .extensions import db, migrate, login_manager
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
@@ -44,10 +45,14 @@ def create_app(test_config=None):
     def load_user(user_id):
         return User.query.get(user_id)
 
-    # Register blueprints
-    from .routes.main import main_bp
-    app.register_blueprint(main_bp, url_prefix='/api')
+    # App-wide error handler to return json formatted errors instead of default html
+    @app.errorhandler(404)
+    def handle_404_error(e):
+        return jsonify({
+            "error": getattr(e, "description", "Resource not found")
+        }), 404
 
+    # Register blueprints
     from .routes.signup import signup_db
     app.register_blueprint(signup_db, url_prefix='/api')
 

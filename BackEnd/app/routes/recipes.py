@@ -6,6 +6,7 @@ from datetime import datetime, timezone, timedelta
 from ..models import Recipe, Ingredient, RecipeIngredient
 from ..extensions import db
 from ingredient_parser import parse_ingredient
+from ..utils.decorators import admin_required
 
 recipes_db = Blueprint('recipes', __name__)
 
@@ -133,7 +134,7 @@ def submit_recipe():
      return jsonify({
           "message":"Recipe created successfully",
           "recipe": new_recipe.to_dict()
-     }), 200
+     }), 201
 
 @recipes_db.route('/recipes', methods=["GET"])
 def get_recipes():
@@ -151,7 +152,7 @@ def get_recipes():
         )
 
     return jsonify({
-         'recipes': [recipe.to_dict(2) for recipe in pagination.items],
+         'recipes': [recipe.to_dict() for recipe in pagination.items],
          'total': pagination.total,
          'pages': pagination.pages,
          'current_page': page,
@@ -176,6 +177,9 @@ def search_recipes():
     '''
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
+
+    per_page = min(per_page, 100)
+
     query = request.args.to_dict(flat=False)
 
     if not query:
@@ -202,7 +206,7 @@ def search_recipes():
     pagination = Recipe.query.filter(db.and_(*conditions)).paginate(page=page, per_page=per_page, error_out=False)
 
     return jsonify({
-             'recipes': [recipe.to_dict(2) for recipe in pagination.items],
+             'recipes': [recipe.to_dict() for recipe in pagination.items],
              'total': pagination.total,
              'pages': pagination.pages,
              'current_page': page,
@@ -249,7 +253,7 @@ def update_recipe(recipe_id):
                          for ri in current_ris:
                               if ri.ingredient:
                                    current_ri_map[ri.ingredient.name] = ri
-                         # Keep track of what we've processed so we knoew what to delete later
+                         # Keep track of what we've processed so we know what to delete later
                          seen_ingredient_names = set()
 
                          # Go through each ing
@@ -354,6 +358,8 @@ def get_recent_recipes():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
 
+    per_page = min(per_page, 100)
+
     # Recipes posted from the last 7 days
     cutoff_date = datetime.now(timezone.utc) - timedelta(days=7)
 
@@ -362,17 +368,18 @@ def get_recent_recipes():
     ).order_by(Recipe.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
 
     return jsonify({
-         'recipes': [recipe.to_dict(2) for recipe in pagination.items],
+         'recipes': [recipe.to_dict() for recipe in pagination.items],
          'total': pagination.total,
          'pages': pagination.pages,
          'current_page': page,
          'has_next': pagination.has_next,
-         'has_prec': pagination.has_prev
+         'has_prev': pagination.has_prev
 
     }), 200
 
 ### Just quick way to check RecipeIngredients was deleted alongside a recipe
 @recipes_db.route('/recipeIng', methods=['GET'])
+@admin_required
 def get_recipe_ing():
      # Get pagination parameters from query string
      page = request.args.get('page', 1, type=int)

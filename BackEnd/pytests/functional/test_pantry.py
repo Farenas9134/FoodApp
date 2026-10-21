@@ -23,7 +23,7 @@ def test_add_to_pantry(test_client, make_recipe):
     """
     # Add ingredients into DB
     recipe_res = make_recipe()
-    assert recipe_res.status_code == 200
+    assert recipe_res.status_code == 201
 
     pantry_info = {
         'ingredients':[1,2,3]
@@ -50,7 +50,7 @@ def test_add_to_pantry(test_client, make_recipe):
 def test_add_to_pantry_errors(test_client, make_recipe, data, expected_status, expected_error):
     # Add ingredients into DB
     recipe_res = make_recipe()
-    assert recipe_res.status_code == 200
+    assert recipe_res.status_code == 201
 
     # Add 1 ingredient to pantry
     pantry_info = {

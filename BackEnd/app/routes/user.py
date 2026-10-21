@@ -22,6 +22,8 @@ def get_user_recipes():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
 
+    per_page = min(per_page, 100)
+
     # Join Recipe and SavedRecipes, filtering by the current logged-in user
     pagination = (
         Recipe.query.join(SavedRecipes, Recipe.recipe_id == SavedRecipes.recipe_id)
@@ -46,6 +48,17 @@ def get_user_recipes():
 def save_recipe(recipe_id):
     recipe = Recipe.query.get_or_404(recipe_id, "error: Recipe does not exist!")
 
+    # Check if already saved
+    existing = SavedRecipes.query.filter_by(
+        user_id=current_user.user_id, 
+        recipe_id=recipe_id
+    ).first()
+
+    if existing:
+        return jsonify({
+            'message': 'Recipe already saved'
+        }), 400
+    
     saved_recipe = SavedRecipes(user_id=current_user.user_id, recipe_id=recipe_id)
     db.session.add(saved_recipe)
     db.session.commit()
@@ -125,13 +138,15 @@ def unfollow_user(user_id):
     current_user.unfollow(user)
     db.session.commit()
 
-    return jsonify({'message': f'You have successfully unfollowed {user.name}'}), 201
+    return jsonify({'message': f'You have successfully unfollowed {user.name}'}), 200
 
 @user_bp.route('/user/followers', methods=['GET'])
 @login_required
 def get_user_followers():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
+
+    per_page = min(per_page, 100)
 
     # Generates SQL select construct from the instance relationship
     stmt = current_user.followers.select().order_by(Relationships.followed_at.desc())
@@ -163,6 +178,8 @@ def get_user_followings():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
 
+    per_page = min(per_page, 100)
+
     # Generates SQL select construct from the instance relationship
     stmt = current_user.following.select().order_by(Relationships.followed_at.desc())
 
@@ -179,7 +196,7 @@ def get_user_followings():
         })
     
     return jsonify({
-        'following' : following_data,
+        'followings' : following_data,
         'total': pagination.total,
         'pages': pagination.pages,
         'current_page': pagination.page,

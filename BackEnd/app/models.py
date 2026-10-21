@@ -122,16 +122,11 @@ class Ingredient(db.Model):
                  sqlite_where=sa.text('is_deleted = 0')),
     )
 
-    def to_dict(self, mode=1):
-        """Default mode is 1 which returns minimized non-macro nutrient info, 2 returns full data"""
+    def to_dict(self):
         data = {}
         for column in self.__table__.columns:
-            if mode == 1 and column.name == 'name':
-                value = getattr(self, column.name)
-                data[column.name] = value
-            elif mode == 2:
-                value = getattr(self, column.name)
-                data[column.name] = value
+            value = getattr(self, column.name)
+            data[column.name] = value
         return data
 
     @classmethod
@@ -250,7 +245,7 @@ class Recipe(db.Model):
             UniqueConstraint('submitted_by', 'title', name='uq_user_recipe_title'),
         )
         
-    def to_dict(self, mode=1):
+    def to_dict(self):
         data = {}
         for column in self.__table__.columns:
             value = getattr(self, column.name)
@@ -258,9 +253,6 @@ class Recipe(db.Model):
             if isinstance(value, datetime):
                 # turns datetime into formatted string
                 value = value.isoformat()
-            # Simple mode for minimal recipe display instead of huge blocky text
-            if mode == 2 and column.name == 'instructions':
-                continue
             data[column.name] = value
         return data
 

@@ -33,7 +33,7 @@ def test_extraction_and_submit_recipe(test_client, make_user):
 
     # Submit recipe
     response = test_client.post('/api/recipes', json=recipe)
-    assert response.status_code == 200, f"Route failed with response {response.get_data(as_text=True)}"
+    assert response.status_code == 201, f"Route failed with response {response.get_data(as_text=True)}"
     assert 'Recipe created successfully' in response.json['message']
     assert 'Steak and Cilantro Rice' in response.json['recipe']['title']
 
@@ -82,7 +82,7 @@ def test_submit_recipe(test_client, make_user):
 
     # Submit recipe
     response = test_client.post('api/recipes', json=recipe_data)
-    assert response.status_code == 200, f"Route failed with response {response.get_data(as_text=True)}"
+    assert response.status_code == 201, f"Route failed with response {response.get_data(as_text=True)}"
     assert 'Recipe created successfully' in response.json['message']
     assert 'Cookies' in response.json['recipe']['title']
 
@@ -93,7 +93,7 @@ def test_recipe_fixture(make_recipe):
     THEN successfully add a recipe to the DB
     """
     response = make_recipe()
-    assert response.status_code == 200
+    assert response.status_code == 201
 
 def test_same_recipe_title(make_recipe):
     """
@@ -166,7 +166,7 @@ def test_get_recipes(test_client, make_user, make_recipe):
 
     # Submit a recipe with user (just changing default email to the one we used above)
     recipe_response = make_recipe(user_email='easy@gmail.com')
-    assert recipe_response.status_code == 200
+    assert recipe_response.status_code == 201
 
     # Now request recipes with 1 recipe in DB
     response = test_client.get('/api/recipes')
@@ -184,7 +184,7 @@ def test_get_recipe_by_id(test_client, make_recipe, capsys):
     THEN return wanted recipe details
     """
     recipe_res = make_recipe()
-    assert recipe_res.status_code == 200
+    assert recipe_res.status_code == 201
 
     res = test_client.get('/api/recipes/1')
     assert res.status_code == 200
@@ -226,7 +226,7 @@ def test_delete_recipe(test_client, make_recipe):
     """
     # Create recipe
     recipe_res = make_recipe()
-    assert recipe_res.status_code == 200
+    assert recipe_res.status_code == 201
 
     # Delete recipe
     res = test_client.delete('/api/recipes/1')
@@ -249,7 +249,7 @@ def test_delete_recipe_invalid_auth(test_client, make_recipe, make_user):
     """
     # Create recipe
     recipe_res = make_recipe()
-    assert recipe_res.status_code == 200
+    assert recipe_res.status_code == 201
 
     # Make new user
     make_user(email="newUser@gmail.com")
@@ -270,7 +270,7 @@ def test_update_recipe(test_client, make_recipe, capsys):
     """
     # Create recipe
     recipe_res = make_recipe()
-    assert recipe_res.status_code == 200
+    assert recipe_res.status_code == 201
 
     # Need to include all prev. ings. or it'll think you meant to remove/delete that ing 
     new_recipe_info = {
