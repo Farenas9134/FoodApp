@@ -19,6 +19,19 @@ def safe_parse_amounts(raw_quantity):
         # Parse_ingredient() likely returned non-numeric string as the amount
         return 1.0, str(raw_quantity)
 
+def get_or_create_ingredient(name, user_id):
+     'Determines if a new ingredient records need to be created'
+     name = name.strip().lower()
+     stmt = (Ingredient.get_visible_for_user(user_id)
+             .where(Ingredient.name == name)
+             .order_by(Ingredient.is_verified.desc()))
+     ing = db.session.scalars(stmt).first()
+     if not ing:
+          ing = Ingredient(name=name, created_by=user_id)
+          db.session.add(ing)
+          db.session.flush()
+     return ing
+
 @recipes_db.route('/recipes', methods=["POST"])
 @login_required
 def submit_recipe():
@@ -92,15 +105,7 @@ def submit_recipe():
 
                # Then check if existing ingredient record exists first
                if not new_ing:
-                    new_ing = Ingredient.query.filter_by(name=ing_name).first()
-
-               # If completely new ingredient, create new record
-               # other details are left to default for now
-               if not new_ing:
-                    new_ing = Ingredient(name=ing_name, created_by=user_id)
-                    db.session.add(new_ing)
-                    # Adds instance in limbo state, not a full commit. Flush needed to assign an id
-                    db.session.flush()
+                    new_ing = get_or_create_ingredient(ing_name, user_id)
 
                local_ingredient_cache[ing_name] = new_ing
 
@@ -202,7 +207,7 @@ def search_recipes():
              'pages': pagination.pages,
              'current_page': page,
              'has_next': pagination.has_next,
-             'has_prec': pagination.has_prev
+             'has_prev': pagination.has_prev
     
         }), 200
 
@@ -262,20 +267,12 @@ def update_recipe(recipe_id):
                               seen_ingredient_names.add(ing_name)
 
                               # Check if base ing exists in DB
-                              base_ing = Ingredient.query.filter_by(name=ing_name).first()
-
-                              # Handle missing or soft-deleted ingredients
-                              if not base_ing:
-                                   # Create new record if DNE
-                                   base_ing = Ingredient(name=ing_name, created_by=user_id)
-                                   db.session.add(base_ing)
-                                   db.session.flush()
-                              elif base_ing.is_deleted:
-                                   base_ing.is_deleted = False
+                              base_ing = get_or_create_ingredient(ing_name, user_id)
 
                               # Update or Create RecipeIngredient Links
                               if ing_name in current_ri_map:
                                    exisiting_ri = current_ri_map[ing_name]
+                                   exisiting_ri.ingredient_id = base_ing.id
                                    if amount is not None:
                                         exisiting_ri.amount = amount
                                    if unit is not None:
@@ -285,8 +282,8 @@ def update_recipe(recipe_id):
                                    new_ri = RecipeIngredient(
                                         recipe_id = recipe.recipe_id,
                                         ingredient_id = base_ing.id,
-                                        amount = amount,
-                                        unit = unit
+                                        amount = amount or 0.0,
+                                        unit = unit or ''
                                    )
                                    db.session.add(new_ri)
 
@@ -324,7 +321,7 @@ def update_recipe(recipe_id):
 
           db.session.commit()
           return jsonify(
-               {'Success': 'Successfully changed the recipe!',
+               {'message': 'Successfully changed the recipe!',
                 'recipe': recipe.to_dict(),
                 'ingredients': recipe.get_ingredients_print()
                 }), 200

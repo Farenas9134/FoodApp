@@ -33,10 +33,10 @@ def get_user_recipes():
     recipes = [recipe.to_dict() for recipe in pagination.items]
 
     return jsonify({
-        'saved recipes' : recipes,
+        'saved_recipes' : recipes,
         'total': pagination.total,
         'pages': pagination.pages,
-        'current page': pagination.page,
+        'current_page': pagination.page,
         'has_next': pagination.has_next,
         'has_prev': pagination.has_prev
     }), 200
@@ -102,10 +102,10 @@ def delete_user_profile():
 def follow_user(user_id):
     user = db.session.scalar(sa.select(User).where(User.user_id == user_id))
     if user is None:
-        return jsonify({'error': f'User id {user_id} not found.', "details":"Refer to documentation for proper usage"}), 401
+        return jsonify({'error': f'User id {user_id} not found.', "details":"Refer to documentation for proper usage"}), 404
 
     if user == current_user:
-        return jsonify({'error': 'You cannot follow yourself!', "details":"Refer to documentation for proper usage"}), 401
+        return jsonify({'error': 'You cannot follow yourself!', "details":"Refer to documentation for proper usage"}), 400
 
     current_user.follow(user)
     db.session.commit()
@@ -117,10 +117,10 @@ def follow_user(user_id):
 def unfollow_user(user_id):
     user = db.session.scalar(sa.select(User).where(User.user_id == user_id))
     if user is None:
-        return jsonify({'error': f'User id {user_id} not found.', "details":"Refer to documentation for proper usage"}), 401
+        return jsonify({'error': f'User id {user_id} not found.', "details":"Refer to documentation for proper usage"}), 404
 
     if user == current_user:
-        return jsonify({'error': 'You cannot unfollow yourself!', "details":"Refer to documentation for proper usage"}), 401
+        return jsonify({'error': 'You cannot unfollow yourself!', "details":"Refer to documentation for proper usage"}), 400
 
     current_user.unfollow(user)
     db.session.commit()
@@ -152,7 +152,7 @@ def get_user_followers():
         'followers' : followers_data,
         'total': pagination.total,
         'pages': pagination.pages,
-        'current page': pagination.page,
+        'current_page': pagination.page,
         'has_next': pagination.has_next,
         'has_prev': pagination.has_prev
     }), 200
@@ -182,7 +182,7 @@ def get_user_followings():
         'following' : following_data,
         'total': pagination.total,
         'pages': pagination.pages,
-        'current page': pagination.page,
+        'current_page': pagination.page,
         'has_next': pagination.has_next,
         'has_prev': pagination.has_prev
     }), 200

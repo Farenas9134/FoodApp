@@ -26,6 +26,19 @@ recipe_json = 'testing/recipes-main/recipes.json'
 
 RECIPES_TO_ADD = 5
 
+def get_or_create_ingredient(name, user_id):
+     'Determines if a new ingredient records need to be created'
+     name = name.strip().lower()
+     stmt = (Ingredient.get_visible_for_user(user_id)
+             .where(Ingredient.name == name)
+             .order_by(Ingredient.is_verified.desc()))
+     ing = db.session.scalars(stmt).first()
+     if not ing:
+          ing = Ingredient(name=name, created_by=user_id)
+          db.session.add(ing)
+          db.session.flush()
+     return ing
+
 def safe_parse_amounts(raw_quantity):
     
     'Converts quantity to float. Returns amount, extra_notes'
@@ -94,7 +107,7 @@ if __name__ == "__main__":
             image_url = f'{title}.jpg'
             source_platform = 'Dataset'
             tags = "seeded"
-            submitted_by = 999
+            submitted_by = 1
 
             if Recipe.query.filter_by(title=title).first():
                 print(f"Skipping existing recipe: {title}")
@@ -126,11 +139,7 @@ if __name__ == "__main__":
                 comment = f"{extra_note} {base_comment}".strip()
 
                 # Fetch or create Ingredient
-                ingredient = Ingredient.query.filter_by(name=name).first()
-                if not ingredient:
-                    ingredient = Ingredient(name=name)
-                    db.session.add(ingredient)
-                    db.session.flush()
+                ingredient = get_or_create_ingredient(name, submitted_by)
 
                 # Skip duplicates for this recipe
                 if ingredient.id in seen_ingredient_ids:

@@ -32,4 +32,4 @@ def test_user_recipes(test_client, make_user):
 
     assert res.status_code == 200
     assert 'total' in res.json
-    assert 'saved recipes' in res.json
+    assert 'saved_recipes' in res.json

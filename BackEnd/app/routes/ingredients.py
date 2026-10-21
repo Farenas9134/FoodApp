@@ -24,20 +24,24 @@ def create_ingredient():
             missing.append(field)
     if missing: return jsonify({"error": "Missing required fields", "details":f'Missing the following: {missing}'}), 400
 
+    # Name cleaning (" Chicken " == "chicken")
+    clean_name = data["name"].strip().lower()
+
     # Check if ingredient already exists
     # Name works for now, but need to differentiate btw Generic/Name Brand/Homemade/etc.
-    stmt = select(Ingredient).filter_by(name=data["name"])
+    stmt = select(Ingredient).filter_by(name=clean_name)
     existing_recipe = db.session.scalars(stmt).first()
 
-    if existing_recipe: return jsonify({"error": "Ingredient already exists in our database!", "details":"None"}), 400
+    if existing_recipe: return jsonify({"error": f"Ingredient '{clean_name}' already exists in our database!", "details":"None"}), 400
 
     user_id = current_user.user_id
-    new_ingredient = Ingredient(created_by=user_id)
+    new_ingredient = Ingredient(created_by=user_id, name=clean_name)
 
     # Fill in necessary data for Ingredient creation
     for field,value in data.items():
         # Check to see if field is proper
         if field in required_fields:
+            if field == 'name': continue
             setattr(new_ingredient, field, value)
 
     # Add and Commit ingredient to database
@@ -99,11 +103,11 @@ def edit_ingredient(ingredient_id):
 
     # Check if ingredient is a staple/essential ingredient
     if ingredient.is_verified:
-        return jsonify({"error": "Only admin can edit this ingredient", "details":"None"}), 400
+        return jsonify({"error": "Only admin can edit this ingredient", "details":"None"}), 403
 
     # Check if ingredient submitted by user
     if user_id != ingredient.created_by:
-        return jsonify({'error': 'Only user who submitted this ingredient can change it.', "details":"None"}), 400
+        return jsonify({'error': 'Only user who submitted this ingredient can change it.', "details":"None"}), 403
 
     mutable_i_field = set(Ingredient.__table__.columns.keys()) - {'id', 'is_verified', 'created_by'}
 
@@ -166,10 +170,10 @@ def delete_ingredient(ingredient_id):
 
     # If user did not create Ingredient throw error
     if current_user.user_id != ingredient.created_by: 
-        return jsonify({"message":"User did not create this ingredient!"}), 403
+        return jsonify({"error":"User did not create this ingredient!"}), 403
     # If ingredient is a staple cannot delete
     if ingredient.is_verified: 
-        return jsonify({"message":"Ingredient can only be deleted by an admin user!"}), 403
+        return jsonify({"error":"Ingredient can only be deleted by an admin user!"}), 403
 
     # Check if ingredient is used in ANY recipe or pantry
     is_used_in_recipes = db.session.query(

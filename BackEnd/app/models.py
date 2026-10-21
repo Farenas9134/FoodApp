@@ -98,7 +98,7 @@ class Ingredient(db.Model):
     __tablename__ = 'ingredient'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
+    name = db.Column(db.String(100), nullable=False)
 
     # Core macros
     calories = db.Column(db.Float, nullable=False, default=0.0)
@@ -113,9 +113,14 @@ class Ingredient(db.Model):
     # Soft deletion of ingredients but still want it to be referenced by recipes
     is_deleted = db.Column(db.Boolean, default=False, nullable=False, server_default=sa.text('0'))
 
-    # Detailed micronutrients
-    # Figure out later, focus on macros
-    # micronutrients = db.Column(db.JSON, default=dict)
+    __table_args__ = (
+        # Prevents two public/live 'chicken' rows
+        sa.Index('unique_ingredient_verified_name', 'name', unique=True,
+                 sqlite_where=sa.text('is_verified = 1 AND is_deleted = 0')),
+        # Prevents one user from having two live 'chicken' rows
+        sa.Index('unique_ingredient_creator_name', 'name', 'created_by', unique=True,
+                 sqlite_where=sa.text('is_deleted = 0')),
+    )
 
     def to_dict(self, mode=1):
         """Default mode is 1 which returns minimized non-macro nutrient info, 2 returns full data"""
