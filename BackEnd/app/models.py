@@ -14,6 +14,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import joinedload
 
 class Relationships(db.Model):
+    """Association table for follows: follower_id follows followed_id."""
     __tablename__ = 'Relationships'
 
     followed_id = db.Column(db.Integer, db.ForeignKey('user.user_id', ondelete='CASCADE'), nullable=False, primary_key=True)
@@ -21,6 +22,10 @@ class Relationships(db.Model):
     followed_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 class User(UserMixin, db.Model):
+    """
+    An account. Tracks password hash, reset token, admin flag, and
+    follower/following links
+    """
     __tablename__ = 'user'
 
     # There's a bunch to the following system I am confused by
@@ -63,38 +68,51 @@ class User(UserMixin, db.Model):
     
     # Overrides default get_id() function, otherwise we get NotImplementedError()
     def get_id(self):
+        """Return the user id for Flask-Login"""
         return (self.user_id)
 
     def follow(self, user):
+        """Follow `user` if not already following."""
         if not self.is_following(user):
             self.following.add(user)
 
     def unfollow(self, user):
+        """Unfollow `user` if currently following."""
         if self.is_following(user):
             self.following.remove(user)
 
     def is_following(self, user):
+        """Return True if this user follows `user`."""
         query = self.following.select().where(User.user_id == user.user_id)
         return db.session.scalar(query) is not None
 
     def followers_count(self):
+        """Return how many users follow this user."""
         query = sa.select(sa.func.count()).select_from(
             self.followers.select().subquery())
         return db.session.scalar(query)
 
     def following_count(self):
+        """Return how many users this user follows."""
         query = sa.select(sa.func.count()).select_from(
             self.following.select().subquery())
         return db.session.scalar(query)
 
     def set_password(self, password):
+        """Hash `password` and store it. Never stores plaintext."""
         self.password = generate_password_hash(password)
 
     def check_password(self, password):
+        """Return True if `password` matches the stored hash."""
         return check_password_hash(self.password, password)
 
 
 class Ingredient(db.Model):
+    """
+    A food item with macros. Verified records are food staples; unverified
+    records are custom foods owned by creator. Soft-deleted records stay in the DB so
+    recipes that reference them don't break.
+    """
     __tablename__ = 'ingredient'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -123,6 +141,7 @@ class Ingredient(db.Model):
     )
 
     def to_dict(self):
+        """Return every column as a JSON-safe dict."""
         data = {}
         for column in self.__table__.columns:
             value = getattr(self, column.name)
@@ -131,7 +150,12 @@ class Ingredient(db.Model):
 
     @classmethod
     def get_visible_for_user(cls, user_id):
-        """Returns a SQLAlchemy Select statement for visible ingredients"""
+        """
+        Build a Select for ingredients a user may see, ordered by name.
+
+        Args: user_id (int | None): None means logged out (verified only)
+        Returns: Select: not yet executed, so callers can add filters
+        """
         stmt = sa.select(cls).where(cls.is_deleted == False)
 
         if user_id is not None:
@@ -147,6 +171,7 @@ class Ingredient(db.Model):
         return stmt.order_by(cls.name)
 
 class RecipeIngredient(db.Model):
+    """Links a recipe to an ingredient with amount, unit, and notes."""
     __tablename__ = "RecipeIngredient"
 
     # Standalone pk so we can have multiple instances of one ingredient
@@ -163,6 +188,8 @@ class RecipeIngredient(db.Model):
     ingredient: so.Mapped['Ingredient'] = so.relationship()
 
     def to_dict(self):
+        """Return the ingredient's fields plus recipe_ingredient_id, amount, unit, notes."""\
+        
         # Grab ingredient info from linked Ingredient model
         data = self.ingredient.to_dict() if self.ingredient else {}
 
@@ -174,7 +201,7 @@ class RecipeIngredient(db.Model):
 
         return data
 class UserPantry(db.Model):
-    """Attrs: id, user_id, ingredient_id"""
+    """One ingredient in one user's pantry (unique per user + ingredient)."""
     __tablename__ = "UserPantry"
 
     __table_args__ = (
@@ -195,12 +222,17 @@ class UserPantry(db.Model):
     ingredient: so.Mapped['Ingredient'] = so.relationship()
 
     def to_dict(self):
+        """Return the ingredient's fields plus pantry_id and user_id."""
         data = self.ingredient.to_dict() if self.ingredient else {}
         data['pantry_id'] = self.id
         data['user_id'] = self.user_id
 
         return data
 class Recipe(db.Model):
+    """
+    A saved recipe imported from a social platform. source_url is globally
+    unique; title is unique per submitting user.
+    """
     # sets name of db table in SQLite
     __tablename__ = "recipes"
 
@@ -246,6 +278,9 @@ class Recipe(db.Model):
         )
         
     def to_dict(self):
+        """
+        Return the recipe as a JSON-safe dict
+        """
         data = {}
         for column in self.__table__.columns:
             value = getattr(self, column.name)
@@ -257,6 +292,7 @@ class Recipe(db.Model):
         return data
 
     def get_ingredients_print(self):
+        """Return this recipe's ingredients as a list of dicts."""
         # Generate select query from writeonlymapped relationship
         stmt = self.recipe_ingredients.select()
 
@@ -266,7 +302,8 @@ class Recipe(db.Model):
         return [ri.to_dict() for ri in recipe_ingredients]
 
     def get_ingredients(self):
-                # Generate select query from writeonlymapped relationship
+        """Return this recipe's RecipeIngredient objects."""
+        # Generate select query from writeonlymapped relationship
         stmt = self.recipe_ingredients.select()
 
         # execute and return all rows as a python list
@@ -275,6 +312,7 @@ class Recipe(db.Model):
         return recipe_ingredients
 
 class SavedRecipes(db.Model):
+    """A user's bookmark of a recipe, with the time it was saved."""
     __tablename__ = 'SavedRecipes'
 
     id = db.Column(db.Integer, primary_key=True)

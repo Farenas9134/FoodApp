@@ -11,7 +11,17 @@ from ..utils.decorators import admin_required
 recipes_db = Blueprint('recipes', __name__)
 
 def safe_parse_amounts(raw_quantity):
-    'Converts quantity to float. Returns amount, extra_notes'
+    """
+    Convert a parsed ingredient quantity to a float.
+
+    Args: raw_quantity (str | float | None): quantity from ingredient_parser
+
+    Returns: tuple[float, str]: (amount, extra_notes). 
+          Falls back to:
+               - (1.0, str(raw_quantity)) if non-numeric 
+                or 
+               - (1.0, '') if empty.
+    """
     if not raw_quantity:
         return 1.0, ''
     try:
@@ -21,7 +31,15 @@ def safe_parse_amounts(raw_quantity):
         return 1.0, str(raw_quantity)
 
 def get_or_create_ingredient(name, user_id):
-     'Determines if a new ingredient records need to be created'
+     """
+     Find a visible ingredient by name, or create an unverified one.
+
+     Prefers a verified (staple) match over a user's custom one. A new
+     ingredient is flushed, not committed; the caller commits.
+
+     Args: name (str): ingredient name; user_id (int): creator/vieweer
+     Returns: Ingredient
+     """
      name = name.strip().lower()
      stmt = (Ingredient.get_visible_for_user(user_id)
              .where(Ingredient.name == name)
@@ -36,6 +54,17 @@ def get_or_create_ingredient(name, user_id):
 @recipes_db.route('/recipes', methods=["POST"])
 @login_required
 def submit_recipe():
+     """
+     Create a recipe and its RecipeIngredient rows in one transaction.
+
+     Auth: login required
+     Body: every Recipe column except recipe_id, created_at, last_updated,
+          submitted_by; recipe_ingredients is a list of raw strings
+          (ex "2 cups flour"), parsed with ingredient_parser.
+     Returns: 201: {message, recipe}
+     Errors: 400: bad JSON, missing fields, no ingredients, duplicate
+          source_url or title, any other failure (rolled back)
+     """
      data = request.get_json()
 
      if not isinstance(data, dict): 
@@ -138,6 +167,13 @@ def submit_recipe():
 
 @recipes_db.route('/recipes', methods=["GET"])
 def get_recipes():
+    """
+    List recipes, newest first (should change based on popularity, but that's a whole thing).
+
+    Auth: public
+    Query: page (int), per_page (int, max 100)
+    Returns: 200: {recipes, total, pages, current_page, has_next, has_prev}
+    """
     # Get pagination parameters from query string
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
@@ -162,19 +198,30 @@ def get_recipes():
 
 @recipes_db.route('/recipes/<recipe_id>', methods=["GET"])
 def get_recipe_by_id(recipe_id):
-    # get_or_404 automatically returns 404 error if recipe not found
-    recipe = Recipe.query.get_or_404(recipe_id, "error: Recipe does not exist!")
-              
-    return jsonify({
-         'recipe': recipe.to_dict(),
-         'ingredients': recipe.get_ingredients_print()
-    }), 200
+     """
+     Get specific recipe by id.
+
+     Auth: public
+     Returns: 200: {recipe, ingredients}
+     Errors: 404: recipe not found
+     """
+     # get_or_404 automatically returns 404 error if recipe not found
+     recipe = Recipe.query.get_or_404(recipe_id, "error: Recipe does not exist!")
+               
+     return jsonify({
+          'recipe': recipe.to_dict(),
+          'ingredients': recipe.get_ingredients_print()
+     }), 200
 
 @recipes_db.route('/recipes/search', methods=['GET'])
 def search_recipes():
-    '''
-        Lowkey inefficent but should work rn as db is small.
-    '''
+    """
+    Filter recipes by field values (case-insensitive).
+
+    Auth: public
+    Query: any searchable Recipe field, repeatable; page, per_page
+    Returns: 200: paginated {recipes, ...}; {recipes: []} if no params
+    """
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
 
@@ -215,10 +262,19 @@ def search_recipes():
     
         }), 200
 
-
 @recipes_db.route('/recipes/<int:recipe_id>', methods=['PUT'])
 @login_required
 def update_recipe(recipe_id):
+     """
+     Update any subset of a recipe's fields. Owner only.
+
+     Auth: login required
+     Body: recipe fields; recipe_ingredients (if sent) is a list of
+          {name, amount, unit} and REPLACES the full set (missing ones are removed)
+     Returns: 200: {message, recipe, ingredients}
+     Errors: 400: bad JSON, wrong field type, duplicate title/source_url
+               403: not the owner; 404: not found; 500: unexpected error
+     """
      user_id = current_user.user_id
      data = request.get_json()
 
@@ -337,6 +393,13 @@ def update_recipe(recipe_id):
 @recipes_db.route('/recipes/<int:recipe_id>', methods=['DELETE'])
 @login_required
 def delete_recipe(recipe_id):
+     """
+     Delete a recipe and its RecipeIngredient rows. Owner only.
+
+     Auth: login required
+     Returns: 200: {message}
+     Errors: 403: not the owner; 404: not found; 500: unexpected error
+     """
      recipe = Recipe.query.get_or_404(recipe_id, "error: recipe does not exist!")
      user_id = current_user.user_id
 
@@ -354,6 +417,13 @@ def delete_recipe(recipe_id):
 
 @recipes_db.route('/recipes/recent', methods=["GET"])
 def get_recent_recipes():
+    """
+    List recipes created in the last 7 days, newest first.
+
+    Auth: public
+    Query: page, per_page
+    Returns: 200: {recipes, total, pages, current_page, has_next, has_prev}
+    """
     # Get pagination parameters from query string
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)

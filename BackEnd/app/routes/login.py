@@ -9,11 +9,16 @@ from datetime import datetime, timedelta, timezone
 
 login_bp = Blueprint('login', __name__, template_folder='templates')
 
-'''
-Gets a user's username and password, queries the user database to determine whether the user has signed up; if yes, successful login follows
-'''
 @login_bp.route('/login', methods=['POST'])
 def login_post():
+    """
+    Log a user in and start a session.
+
+    Auth: public
+    Body: email (str), password (str)
+    Returns: 200: {message}, sets session cookie
+    Errors: 400: bad JSON, missing fields, unknown email, wrong password
+    """
 
     data = request.get_json()
 
@@ -61,11 +66,16 @@ def login_post():
         "message":"Successful login"
     }), 200
 
-'''
-Sends a password reset link to a user's email
-'''
 @login_bp.route('/forgot-password', methods=['POST'])
 def forgot_password():
+    """
+    Generate a 1-hour password reset token and store it on the user.
+
+    Auth: public
+    Body: email (str)
+    Returns: 200: {message}. No email is sent yet
+    Errors: 400: missing body/email, user not found
+    """
     data = request.get_json()
 
     if not data: 
@@ -97,11 +107,17 @@ def forgot_password():
         "message":"Password reset link successfully sent to your email"
     })
 
-'''
-Route to reset your password
-'''
+
 @login_bp.route('/reset-password/<token>', methods=['POST'])
 def reset_password(token):
+    """
+    Set a new password using a reset token from the URL.
+
+    Auth: public
+    Body: email (str), password (str)
+    Returns: 200: {message}; token is cleared after use
+    Errors: 400: missing email/password, invalid or expired token
+    """
 
     data = request.get_json()
 
@@ -138,12 +154,15 @@ def reset_password(token):
         "message":"Password successfully reset"
     })    
 
-'''
-Logs out a user from their current session
-'''
 @login_bp.route('/logout')
 @login_required
 def logout():
+    """
+    End the current session.
+
+    Auth: login required
+    Returns: 200: {message}
+    """
     logout_user()
     return jsonify({
         "message":"Successful logout"

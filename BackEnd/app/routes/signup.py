@@ -8,6 +8,14 @@ signup_db = Blueprint('signup', __name__)
 
 @signup_db.route('/signup', methods=['POST'])
 def signup_post():
+    """
+    Create a new user with a hashed password.
+
+    Auth: public
+    Body: email (str), name (str), password (str)
+    Returns: 201: {message, user: {email, name}}
+    Errors: 400: bad JSON, missing fields, email already registered
+    """
 
     data = request.get_json(silent=True)
 
