@@ -24,7 +24,7 @@ app = create_app()
 
 recipe_json = 'testing/recipes-main/recipes.json'
 
-RECIPES_TO_ADD = 5
+RECIPES_TO_ADD = 10
 
 def get_or_create_ingredient(name, user_id):
      'Determines if a new ingredient records need to be created'
