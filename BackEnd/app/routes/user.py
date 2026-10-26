@@ -12,6 +12,7 @@ user_bp = Blueprint('user', __name__)
 @user_bp.route('/user')
 @login_required
 def get_user():
+    """Greet user. Prob delete"""
     return jsonify({
         'message':f'hello {current_user.name}! Your id is {current_user.user_id}'
     }), 200
@@ -19,6 +20,13 @@ def get_user():
 @user_bp.route('/user/recipes', methods=['GET'])
 @login_required
 def get_user_recipes():
+    """
+    List the user's saved recipes, most recently saved first.
+
+    Auth: login required
+    Query: page, per_page
+    Returns: 200: {saved_recipes, total, pages, current_page, has_next, has_prev}
+    """
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
 
@@ -46,6 +54,13 @@ def get_user_recipes():
 @user_bp.route('/user/recipes/<recipe_id>', methods=['POST'])
 @login_required
 def save_recipe(recipe_id):
+    """
+    Save a recipe to the user's collection.
+
+    Auth: login required
+    Returns: 201: {message, recipe_saved}
+    Errors: 404: recipe not found
+    """
     recipe = Recipe.query.get_or_404(recipe_id, "error: Recipe does not exist!")
 
     # Check if already saved
@@ -70,16 +85,23 @@ def save_recipe(recipe_id):
 
 @user_bp.route('/user/recipes/<recipe_id>', methods=['DELETE'])
 @login_required
-def delete_recipe(recipe_id):
+def unsave_recipe(recipe_id):
+    """
+    Remove a recipe from the user's saved list.
+
+    Auth: login required
+    Returns: 200: {message}
+    Errors: 404: recipe was not saved; 500: unexpected error
+    """
     saved_recipe = SavedRecipes.query.filter_by(user_id=current_user.user_id, recipe_id=recipe_id).first()
 
     if not saved_recipe:
-        return jsonify({'error': 'Recipe not previously saved, cannot delete.', "details":"Refer to documentation for proper usage"}), 404
+        return jsonify({'error': 'Recipe not previously saved, cannot unsave.', "details":"Refer to documentation for proper usage"}), 404
     
     try:
         db.session.delete(saved_recipe)
         db.session.commit()
-        return jsonify({'message': 'Recipe deleted successfully'}), 200
+        return jsonify({'message': 'Recipe unsaved successfully'}), 200
     
     except Exception as e:
         db.session.rollback()
@@ -88,6 +110,13 @@ def delete_recipe(recipe_id):
 @user_bp.route('/user', methods=['DELETE'])
 @login_required
 def delete_user_profile():
+    """
+    Delete the account, its saved recipes, and recipes it submitted, then log out.
+
+    Auth: login required
+    Returns: 200: {message}
+    Errors: 500: unexpected error (rolled back)
+    """
     user_id = current_user.user_id
 
     try:
@@ -113,6 +142,13 @@ def delete_user_profile():
 @user_bp.route('/user/follow/<user_id>', methods=['POST'])
 @login_required
 def follow_user(user_id):
+    """
+    Follow another user.
+
+    Auth: login required
+    Returns: 201: {message}
+    Errors: 400: cannot follow yourself; 404: user not found
+    """
     user = db.session.scalar(sa.select(User).where(User.user_id == user_id))
     if user is None:
         return jsonify({'error': f'User id {user_id} not found.', "details":"Refer to documentation for proper usage"}), 404
@@ -128,6 +164,13 @@ def follow_user(user_id):
 @user_bp.route('/user/unfollow/<user_id>', methods=['DELETE'])
 @login_required
 def unfollow_user(user_id):
+    """
+    Unfollow a user.
+
+    Auth: login required
+    Returns: {message}
+    Errors: 400: cannot unfollow yourself; 404: user not found
+    """
     user = db.session.scalar(sa.select(User).where(User.user_id == user_id))
     if user is None:
         return jsonify({'error': f'User id {user_id} not found.', "details":"Refer to documentation for proper usage"}), 404
@@ -143,6 +186,13 @@ def unfollow_user(user_id):
 @user_bp.route('/user/followers', methods=['GET'])
 @login_required
 def get_user_followers():
+    """
+    List users who follow the current user, newest first.
+
+    Auth: login required
+    Query: page, per_page
+    Returns: 200: {followers: [{user_id, name, email}], ...pagination}
+    """
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
 
@@ -175,6 +225,13 @@ def get_user_followers():
 @user_bp.route('/user/followings', methods=['GET'])
 @login_required
 def get_user_followings():
+    """
+    List users the current user follows, newest first.
+
+    Auth: login required
+    Query: page, per_page
+    Returns: 200: {following: [{user_id, name, email}], ...pagination stuff}
+    """
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
 
@@ -209,6 +266,12 @@ def get_user_followings():
 @login_required
 @admin_required
 def get_all_users():
+    """
+    Testing route: list every user with follower/following counts.
+
+    Auth: admin only
+    Returns: 200: {count, users}
+    """
     all_users = db.session.scalars(sa.select(User)).all()
 
     user_list = []

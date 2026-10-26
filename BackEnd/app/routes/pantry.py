@@ -11,7 +11,13 @@ user_pantry_bp = Blueprint('user-pantry', __name__)
 @user_pantry_bp.route("/pantry", methods=['GET'])
 @login_required
 def get_user_pantry():
-    """Grabs a user's stored pantry ingredients"""
+    """
+    List the current user's pantry items.
+
+    Auth: login required
+    Returns: 200: {pantry: [ingredient fields + pantry_id, user_id]}
+    Errors: 500: unexpected error
+    """
     user_id = current_user.user_id
     try:
         # Build stmt to load in pantry ingredients
@@ -34,7 +40,16 @@ def get_user_pantry():
 @user_pantry_bp.route('/pantry', methods=['POST'])
 @login_required
 def add_to_user_pantry():
-    """Adds a set of ingredient ids into the User's pantry"""
+    """
+    Add ingredients to the user's pantry by id.
+
+    Invalid, invisible, and already-present ids are skipped.
+
+    Auth: login required
+    Body: ingredients (list[int])
+    Returns: 200: {message} with count added (or all already present)
+    Errors: 400: bad JSON, no valid ids, DB failure
+    """
     data = request.get_json()
     if not isinstance(data, dict):
         return jsonify({'error':'Request body must be valid JSON', "details":"Refer to documentation for proper usage"}), 400
@@ -141,7 +156,14 @@ def close_this():
 @user_pantry_bp.route('/pantry', methods=['DELETE'])
 @login_required
 def remove_from_user_pantry():
-    """Removes a set of ingredient ids from User's pantry"""
+    """
+    Remove ingredients from the user's pantry by id.
+
+    Auth: login required
+    Body: ingredients (list[int])
+    Returns: 200: {message}, including when none were in the pantry
+    Errors: 400: bad JSON, DB failure
+    """
     data = request.get_json()
     if not isinstance(data, dict):
         return jsonify({'error':'Request body must be valid JSON', "details":"Refer to documentation for proper usage"}), 400
@@ -186,7 +208,15 @@ def remove_from_user_pantry():
 @user_pantry_bp.route('/pantry-match', methods=['GET'])
 @login_required
 def get_pantry_matched_recipes():
-    """Finds and ranks recipes based on a user's pantry contents"""
+    """
+    Rank recipes by how many of their ingredients are in the user's pantry.
+
+    Sorted by match ratio, then ingredient count (both descending).
+
+    Auth: login required
+    Query: min_match_percentage (float 0-1, default 0.8)
+    Returns: 200: {recipes_matched: [recipe + match_info]}, not paginated (need to do)
+    """
     raw_percentage = request.args.get('min_match_percentage')
 
     # If wrong input, just default to 0.8

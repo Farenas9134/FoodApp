@@ -10,6 +10,15 @@ ingredient_bp = Blueprint('ingredients', __name__)
 @ingredient_bp.route("/ingredients", methods=["POST"])
 @login_required
 def create_ingredient():
+    """
+    Create a custom (unverified) ingredient owned by the logged in user.
+
+    Auth: login required
+    Body: name, calories, protein_g, carbs_g, fat_g (all required)
+        name is trimmed and lowercased
+    Returns: 201: {message, ingredient}
+    Errors: 400: missing body/fields, name already exists
+    """
     # Grab data from request/url
     data = request.get_json()
     # Edge Case check - No inpute
@@ -56,6 +65,13 @@ def create_ingredient():
 
 @ingredient_bp.route('/ingredients', methods=['GET'])
 def get_ingredients():
+    """
+    List ingredients visible to the requester (verified + own, not soft-deleted ones)
+
+    Auth: login optional
+    Query: page, per_page (max 100)
+    Returns: 200: {ingredients, total, pages, current_page, has_next, has_prev}
+    """
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
 
@@ -80,6 +96,13 @@ def get_ingredients():
 
 @ingredient_bp.route('/ingredients/<ingredient_id>', methods=['GET'])
 def get_ingredient(ingredient_id):
+    """
+    Get one visible ingredient.
+
+    Auth: login optional
+    Returns: 200: {ingredient}
+    Errors: 404: not found or not visible
+    """
     user_id = current_user.user_id if current_user.is_authenticated else None
 
     # Restrict lookup to visible ingredients only (staples, customs, & non soft-deleted ones)
@@ -94,6 +117,15 @@ def get_ingredient(ingredient_id):
 @ingredient_bp.route('/ingredients/<ingredient_id>', methods=['PUT'])
 @login_required
 def edit_ingredient(ingredient_id):
+    """
+    Edit a custom ingredient. Creator only. Verified staples are locked.
+
+    Auth: login required
+    Body: any of name, calories, protein_g, carbs_g, fat_g
+    Returns: 200: {message, ingredient}
+    Errors: 400: no data, name taken; 403: staple or not creator;
+        404: not found; 500: unexpected error
+    """
     user_id = current_user.user_id
     data = request.get_json()
     if not data:
@@ -109,7 +141,7 @@ def edit_ingredient(ingredient_id):
     if user_id != ingredient.created_by:
         return jsonify({'error': 'Only user who submitted this ingredient can change it.', "details":"None"}), 403
 
-    mutable_i_field = set(Ingredient.__table__.columns.keys()) - {'id', 'is_verified', 'created_by'}
+    mutable_i_field = set(Ingredient.__table__.columns.keys()) - {'id', 'is_verified', 'created_by', 'is_deleted'}
 
     try:
         for field, value in data.items():
@@ -132,6 +164,13 @@ def edit_ingredient(ingredient_id):
 
 @ingredient_bp.route('/ingredients/search', methods=['GET'])
 def search_ingredients():
+    """
+    Search visible ingredients by name (case-insensitive).
+
+    Auth: login optional
+    Query: q (str), page, per_page (max 100)
+    Returns: 200: {ingredients, total, pages, current_page, has_next, has_prev}
+    """
     # Grab pagination details (specific page you want, how many records per page)
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
@@ -165,6 +204,16 @@ def search_ingredients():
 @ingredient_bp.route('/ingredients/<ingredient_id>', methods=["DELETE"])
 @login_required
 def delete_ingredient(ingredient_id):
+    """
+    Delete a custom ingredient. Creator only.
+
+    Soft-deletes (is_deleted=True) if any existing recipe uses it, so existing
+    recipes keep working; otherwise removes the record.
+
+    Auth: login required
+    Returns: 200: {message}
+    Errors: 403: not creator or is a staple; 404: not found
+    """
     # Grab ingredient record
     ingredient = Ingredient.query.get_or_404(ingredient_id, "error: Ingredient does not exist!")
 
