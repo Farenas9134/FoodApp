@@ -31,7 +31,8 @@ function LogIn() {
                 setError(data.message || "Invalid email or password");
                 return;
             }
-
+            
+            // Will change when we make a profile page or something similar
             window.location.href = "/home";
         } catch {
             setError("Unable to connect. Please try again.");
@@ -41,36 +42,52 @@ function LogIn() {
     }
     return (
         <form onSubmit={handleSubmit}>
-            <h1>LogIn</h1>
+            <div className="login-container">
+                {/* Left side of the login container, will contain an image */}
+                <div className="recipe-image">
+                    <img src="../assets/foodPics/pasta.jpg" alt="Image of a pasta dish"/>
+                </div>
 
-            {/* Email Field */}
-            <label htmlFor="email">Email</label>
-            <input
-                id="email"
-                type="email"
-                autoComplete="username"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-            />
+                {/* Right side of the login container, where the user will actually input info to login */}
+                <div className="login-form">
+                    <h1>Login</h1>
 
-            {/* Password Field */}
-            <label htmlFor="password">Password</label>
-            <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-            />
+                    {/* Email Field */}
+                    <div className="input-field">
+                        <label htmlFor="email">Email</label>
+                        <input
+                            id="email"
+                            type="email"
+                            autoComplete="username"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
 
-            {error && <p role="alert">{error}</p>}
+                    {/* Password Field */}
+                    <div className="input-field">
+                        <label htmlFor="password">Password</label>
+                        <input
+                            id="password"
+                            type="password"
+                            autoComplete="current-password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
 
-            <button type="submit" disabled={loading}>
-                {loading ? "Logging in..." : "Log in"}
-            </button>
-            </form>
+                    {error && <p role="alert">{error}</p>}
+
+                    {/* If login request is processing, "Logging in" will show on the button, otherwise "Log in" will show */}
+                    <button type="submit" disabled={loading} className="login-button">
+                        {loading ? "Logging in..." : "Log in"}
+                    </button>
+                  
+                </div>
+            </div>
+        </form>
     );
 }
 

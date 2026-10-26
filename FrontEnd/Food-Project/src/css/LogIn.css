@@ -1,2 +1,61 @@
-@import 'tailwindcss'
+@import 'tailwindcss';
+@theme {
+    --font-display: "Fraunces", sans-serif;
+    --font-body: "Playfair Display", serif;
+}
 
+.h1{
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+}
+
+.login-container {
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 900px;
+    min-height: 550px;
+    overflow: hidden;
+    display: flex;
+}
+
+.login-form, .recipe-image {
+    width: 50%;
+}
+
+.recipe-image {
+    object-fit: cover;
+}
+
+.input-field {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-field label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+}
+
+/* Email, password fields */
+.input-field input {
+    justify-content: center;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Login button */
+.login-button {
+    justify-content: center;
+    padding: 12px;
+    background-color: #1F3A28;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
