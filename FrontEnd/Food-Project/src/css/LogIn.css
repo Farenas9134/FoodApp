@@ -18,6 +18,7 @@
     min-height: 550px;
     overflow: hidden;
     display: flex;
+    flex-direction: row;
 }
 
 .login-form, .recipe-image {
