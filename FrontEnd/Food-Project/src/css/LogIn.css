@@ -4,16 +4,17 @@
     --font-body: "Playfair Display", serif;
 }
 
-* {
+/* Commented out so other pages display properly */
+/* * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-}
+} */
 
-.body {
+/* .body {
     background-color: #ffffff;
     color: #1F3A28;
-}
+} */
 
 /* ======== LOGIN CONTAINER ======== */
 

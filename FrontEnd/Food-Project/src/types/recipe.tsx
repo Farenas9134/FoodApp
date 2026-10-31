@@ -43,6 +43,15 @@ export interface GetRecipeResponse {
   ingredients: RecipeIngredient[];
 }
 
+export interface SuggestedRecipes {
+    title: string;
+    recipe_id: number;
+}
+
+export interface SuggestedRecipesList {
+    'recipes': Array<SuggestedRecipes>;
+}
+
 export interface RecipesList {
     'recipes': Array<Recipe>;
     'total': string;
