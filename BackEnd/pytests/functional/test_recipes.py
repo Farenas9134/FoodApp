@@ -237,9 +237,10 @@ def test_delete_recipe(test_client, make_recipe):
     double_check_res = test_client.get('recipes/1')
     assert double_check_res.status_code == 404
 
-    # Check if recipeIngredients exist (None should exist)
+    # Check if any recipeIngredients exist (None should exist)
     ing_res = test_client.get('/api/recipeIng')
     assert ing_res.status_code == 200
+    assert len(ing_res.json['recipe_ingredients']) == 0
 
 def test_delete_recipe_invalid_auth(test_client, make_recipe, make_user):
     """
@@ -297,3 +298,19 @@ def test_update_recipe(test_client, make_recipe, capsys):
     assert b'Instagram' in res.data
     assert b'gold gold gold' in res.data
     assert 400 == res.json['ingredients'][3]['amount']
+
+def test_recipe_suggestions(test_client, make_recipe):
+    """
+    GIVEN a proper GET recipe request w/ search term
+    WHEN targeting the get recipe suggestion route
+    THEN return top 8 suggested recipe results
+    """
+    recipe_res = make_recipe()
+    assert recipe_res.status_code == 201
+
+    search = 'cookie'
+
+    res = test_client.get(f'/api/recipes/suggest?title={search}')
+    assert res.status_code == 200
+    assert b'ingredients' not in res.data
+    assert b'Cookies' in res.data

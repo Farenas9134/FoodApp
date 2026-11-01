@@ -447,9 +447,31 @@ def get_recent_recipes():
 
     }), 200
 
+@recipes_db.route('/recipes/suggest', methods=["GET"])
+def get_recipe_suggestions():
+     """
+     Filter recipes by title only & PRE-FIX ONLY (case-insensitive).
+     ['cookies' would not return 'Sugar Cookies']
+     ['sugar' would return 'Sugar Cookies']
+
+     Auth: public
+     Query: Title recipe field
+     Returns: 200: {recipes:[...]} title & id only
+     """
+     searchTerm = request.args.get('title')
+     if not searchTerm: return jsonify({'recipes':[]}), 200
+     n_recipes = 6
+
+     stmt = db.select(Recipe.recipe_id, Recipe.title).filter(Recipe.title.ilike(f'{searchTerm.strip()}%')).limit(n_recipes)
+     recipe_suggestions = db.session.execute(stmt).all()
+
+     return jsonify({
+          "recipes": [recipe._asdict() for recipe in recipe_suggestions]
+     }), 200
+
 ### Just quick way to check RecipeIngredients was deleted alongside a recipe
 @recipes_db.route('/recipeIng', methods=['GET'])
-@admin_required
+@login_required
 def get_recipe_ing():
      # Get pagination parameters from query string
      page = request.args.get('page', 1, type=int)
@@ -465,7 +487,7 @@ def get_recipe_ing():
           )
 
      return jsonify({
-          'recipe Ingredient': [ing.to_dict() for ing in pagination.items],
+          'recipe_ingredients': [ing.to_dict() for ing in pagination.items],
           'total': pagination.total,
           'pages': pagination.pages,
           'current_page': page,
