@@ -2,13 +2,15 @@
 import "../css/recipes.css";
 import axios from 'axios';
 import { ReactElement, useEffect, useState, useRef } from "react";
-import { useLocation } from "react-router-dom";
-import { SuggestedRecipesList, SuggestedRecipes, RecipesList, Recipe } from "../types/recipe";
+import { NavigateFunction, useLocation } from "react-router-dom";
+import { SuggestedRecipes, Recipe } from "../types/recipe";
 import useDebounce from "../components/hooks/useDebounce";
 import FoodCard from "../components/UI/FoodCard";
 import SearchBar from "../components/SearchBar";
 // @ts-ignore
 import NathanGIF from "../assets/gifs/nathan-hungry.gif"
+import { FaSearch } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const recipKeepApi = axios.create({
     baseURL: "/api"
@@ -17,7 +19,7 @@ const recipKeepApi = axios.create({
 function displayRecipes(recipes: Recipe[]): Array<ReactElement> {
     const recipeCards = recipes.map(
         recipe => 
-            <div key={recipe.recipe_id} className="[--card-size:14px]">
+            <li key={recipe.recipe_id} className="[--card-size:14px]">
                 <FoodCard 
                     title={recipe.title}
                     image_url={recipe.image_url}
@@ -28,23 +30,41 @@ function displayRecipes(recipes: Recipe[]): Array<ReactElement> {
                     missing_ingredients={0} 
                     pantry_ratio= {0.9}
                     recipe_id={recipe.recipe_id}/>
-            </div>
+            </li>
     )
     return recipeCards
 }
 
-function displaySuggestedRecipes(recipes: SuggestedRecipes[]): Array<ReactElement> {
-    const suggestedRecipeResults = recipes.map(
-        recipe => 
-            <p key={recipe.recipe_id}>
-                Recipe Found: {recipe.title}
-            </p>
-    )
+function displaySuggestedRecipes(recipes: SuggestedRecipes[], navigate:NavigateFunction): React.ReactNode {
+    
+    const handleViewRecipe = (recipe_id: number) => {
+        navigate(`/recipe/${recipe_id}`);
+    };
+
+    const suggestedRecipeResults = 
+    <ul className="absolute flex flex-col bg-[#FFFFFF] font-display gap-1 w-full mx-auto rounded-4xl p-4 pt-13 text-gray-600 -mt-[44px] z-1">
+        {
+            recipes.map(
+                recipe => 
+                    <li key={recipe.recipe_id}>
+                        <button 
+                            className="flex gap-3 items-center ease-in-out hover:bg-gray-200 rounded-2xl p-1 hover:scale-105 hover:cursor-pointer w-full"
+                            onClick={() => handleViewRecipe(recipe.recipe_id)}>
+                            <FaSearch/>
+                            <p>
+                                {recipe.title}
+                            </p>
+                        </button>
+                    </li>
+            )
+        }
+    </ul>
     return suggestedRecipeResults
 }
 
 function Recipes() {
     const location = useLocation();
+    const navigate = useNavigate();
 
     const [recipes, setRecipes] = useState<Recipe[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -76,11 +96,11 @@ function Recipes() {
 
         try {
             if (query == '') {
-                const response = await recipKeepApi.get('/recipes', {signal: mainRecipesAbortRef.current.signal})
+                const response = await recipKeepApi.get('/recipes', {signal: currentSignal})
                 setRecipes(response.data.recipes)
             }
             else {
-                const response = await recipKeepApi.get(`/recipes/search?title=${encodeURIComponent(query)}`, {signal: mainRecipesAbortRef.current.signal})
+                const response = await recipKeepApi.get(`/recipes/search?title=${encodeURIComponent(query)}`, {signal: currentSignal})
                 setRecipes(response.data.recipes)
             }
         } catch(err) {
@@ -177,16 +197,18 @@ function Recipes() {
     }, []);
 
     return (
-        <div className="flex flex-col w-full min-h-screen box-border mx-auto pl-[3%] pr-[3%] pt-[3%] gap-10">
+        <div className="relative flex flex-col w-full min-h-screen box-border mx-auto pl-[3%] pr-[3%] pt-[3%] gap-10">
             <p className="flex justify-center font-display text-[#183C04] font-medium text-2xl">Browse over 100+ community submitted recipes!</p>
 
             {/* SEARCHBAR NAV */}
-            <div ref={searchContainerRef}>
-                <SearchBar value={searchTerm} onChange={setSearchTerm} onSearch={loadRecipes}/>
+            <div ref={searchContainerRef} className="relative w-[35%] mx-auto">
+                <div className="relative z-10">
+                    <SearchBar value={searchTerm} onChange={setSearchTerm} onSearch={loadRecipes} onFocus={() => setSuggestedDisplayOpen(true)}/>
+                </div>
                 <div>
                     {
-                    (suggestedDisplayOpen) ? (
-                        displaySuggestedRecipes(suggestedRecipes)
+                    (suggestedDisplayOpen) && suggestedRecipes.length >= 1 ? (
+                        displaySuggestedRecipes(suggestedRecipes, navigate)
                     ) : (
                         <></>
                     )
@@ -198,8 +220,8 @@ function Recipes() {
             {error && <p className="flex justify-center items-center font-display text-xl text-black bg-[yellow]">{error}</p>}
 
             {/* RECIPE CARD DISPLAY */}
-            <div className="flex items-center-safe gap-10 flex-wrap justify-center">
-                {recipes.length>=1  || isLoading ? (
+            <ul className="flex items-center gap-10 flex-wrap justify-center">
+                {recipes.length >=1  || isLoading ? (
                     displayRecipes(recipes)
                 ) : (
                     <div className="flex flex-col items-center font-display text-xl text-[#183C04] gap-4">
@@ -208,7 +230,7 @@ function Recipes() {
                     </div>
                 )
                 }
-            </div>
+            </ul>
         </div>
     );
 }

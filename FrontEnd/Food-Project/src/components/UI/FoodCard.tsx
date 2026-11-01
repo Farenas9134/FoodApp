@@ -5,6 +5,7 @@ import cookies from "../../assets/foodPics/cookies.jpg"
 import { FaStar, FaStarHalfAlt } from 'react-icons/fa';
 import { CiClock2 } from 'react-icons/ci'
 import { BiDish, BiSolidDoughnutChart } from 'react-icons/bi'
+import { useNavigate } from "react-router-dom";
 
 interface FoodCardProps{
     title: string;
@@ -39,8 +40,15 @@ function RecipeRatingStars({ rating }: { rating: number}) {
 }
 
 function FoodCard(
-    { title, image_url, rating, total_time, servings, missing_ingredients, pantry_ratio}
-    : FoodCardProps){
+    { title, image_url, rating, total_time, servings, missing_ingredients, pantry_ratio, recipe_id}
+    : FoodCardProps) {
+
+    const navigate = useNavigate();
+
+    const handleViewRecipe = () => {
+        navigate(`/recipe/${recipe_id}`);
+    };
+
     return (
         <div className="FoodCard">
             <div className="image-frame">
@@ -79,9 +87,12 @@ function FoodCard(
                     missing ingredients: {missing_ingredients ?? 'N/A'}
                 </div>
             </div>
-            <div className="button">
-                View Recipe
-            </div>
+            <button 
+                type="button"
+                className="w-[90%] h-[2.5em] bg-[#183C04] text-white flex items-center justify-center text-[1em] rounded-[0.625em] shadow-[0_0.375em_0.25em_grey]> hover:bg-green-700 hover:scale-105 hover:cursor-pointer" 
+                onClick={handleViewRecipe}>
+                    View Recipe
+            </button>
         </div>
     )
 }

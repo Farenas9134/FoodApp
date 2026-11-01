@@ -109,6 +109,7 @@ Flask + Flask-Login + SQLAlchemy (SQLite). All request/response bodies are JSON 
 | GET | `/recipes/recent` | – | Recipes from the last 7 days |
 | PUT | `/recipes/<int:recipe_id>` | 🔒 | Update (owner only) |
 | DELETE | `/recipes/<int:recipe_id>` | 🔒 | Delete (owner only) |
+| GET | `/recipes/suggest` | – | Filter by title only (pre-fix match) |
 
 ### POST `/recipes` 🔒
 
@@ -199,6 +200,14 @@ Owner only (`403` otherwise). Send any subset of recipe fields with updated info
 
 Owner only. 
 - `200`: `{ "message": "Recipe deleted successfully" }`. Its `RecipeIngredient` rows are removed with it.
+
+### GET `/recipes/suggest`
+Query params are recipe titles only names. Returns only prefix matches to increase efficiency with recipe id's and title names. Capped at 6 per query.
+
+```
+/recipes/search?title=chicken
+```
+- `200`: `{ "recipes": "['title':'recipe_name', 'recipe_id':1], ..." }`.
 
 ---
 
