@@ -4,17 +4,6 @@
     --font-body: "Playfair Display", serif;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-.body {
-    background-color: #ffffff;
-    color: #1F3A28;
-}
-
 /* ======== LOGIN CONTAINER ======== */
 
 /* Center login card on the page */
@@ -106,7 +95,6 @@
 
 .input-field input {
     border-color: #ff8a00;
-    box-shadow: 0 0 0 2px rgba(255, 138, 0, 0.12);
 }
 
 /* Where user enters their password */
@@ -150,15 +138,11 @@
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s;
+    width: 100%;
 }
 
 .login-button {
     background-color: #e97c00;
-}
-
-.login-button {
-    outline: 2px solid #171923;
-    outline-offset: 2px;
 }
 
 /* Reponsive Layout */
