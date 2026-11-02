@@ -59,7 +59,7 @@ function Home() {
                             servings='16 servings' 
                             missing_ingredients={2} 
                             pantry_ratio= {0.9}
-                            recipe_id={5}/>
+                            recipe_id={1}/>
                     </div>
                     <div className="card2">
                         <FoodCard
