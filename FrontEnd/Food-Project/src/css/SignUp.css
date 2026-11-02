@@ -4,9 +4,9 @@
     --font-body: "Playfair Display", serif;
 }
 
-/* ======== LOGIN CONTAINER ======== */
+/* ======== SIGNUP CONTAINER ======== */
 
-/* Center login card on the page */
+/* Center signup card on the page */
 .signup-page {
     min-height: 100vh;
     display: flex;
@@ -27,7 +27,7 @@
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.17);
 }
 
-/* Left side of the login container, the image */
+/* Left side of the signup container, the image */
 .recipe-image {
     flex: 1;
     min-width: 0;
@@ -42,7 +42,7 @@
     object-position: center;
 }
 
-/* Right side of the login container, the input fields */
+/* Right side of the signup container, the input fields */
 .signup-form-container {
     flex: 1;
     min-width: 0;
