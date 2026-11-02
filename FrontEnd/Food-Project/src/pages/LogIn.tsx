@@ -66,7 +66,7 @@ function LogIn() {
 
                             {/* Email Field */}
                             <div className="input-field">
-                                <label htmlFor="email">Email</label>
+                                <label htmlFor="email">Email or Username</label>
                                 <input
                                     id="email"
                                     type="email"
