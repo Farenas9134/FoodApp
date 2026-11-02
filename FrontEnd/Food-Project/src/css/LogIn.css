@@ -19,8 +19,8 @@
     display: flex;
     flex-direction: row;
     width: 100%;
-    max-width: 900px;
-    min-height: 300px;
+    max-width: 1350px;
+    min-height: 450px;
     background-color: #ffffff;
     border-radius: 6px;
     overflow: hidden;
@@ -58,10 +58,16 @@
 /* Login Header */
 .login-form h1 {
     margin-bottom: 20px;
-    font-size: 36px;
+    font-size: 54px;
     color: #333;
     font-weight: 800;
     letter-spacing: -1.2px;
+}
+
+.login-form h2 {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 20px;
 }
 
 /* Input fields and their labels */
@@ -71,7 +77,7 @@
 
 .input-field label {
     display: block;
-    font-size: 13px;
+    font-size: 18px;
     margin-bottom: 7px;
     color: #30313a;
 }
@@ -81,7 +87,7 @@
     height: 30px;
     padding: 0 12px;
     font-family: inherit;
-    font-size: 12px;
+    font-size: 14px;
     color: #242424;
     border: 1px solid #e5e5e5;
     border-radius: 5px;
@@ -94,7 +100,7 @@
 }
 
 .input-field input {
-    border-color: #ff8a00;
+    border-color: #1F3A28;
 }
 
 /* Where user enters their password */
@@ -109,7 +115,7 @@
 }
 
 .password-input-container {
-    border-color: #ff8a00;
+    border-color: #1F3A28;
 }
 
 .password-input-container input {
@@ -126,15 +132,25 @@
     box-shadow: none;
 }
 
+.password-toggle {
+    align-self: stretch;
+    padding-right: 5px;
+    flex-shrink: 0;
+    border: none;
+    background-color: #ffffff;
+    color: #242424;
+    cursor: pointer;
+    font-size: 10px;
+}
+
 /* Login Button */
 .login-button {
     padding: 8px 13px;
     border: none;
     border-radius: 5px;
-    background-color: #ff8a00;
     color: #ffffff;
     font-family: inherit;
-    font-size: 13px;
+    font-size: 18px;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s;
@@ -142,7 +158,26 @@
 }
 
 .login-button {
-    background-color: #e97c00;
+    background-color: #81C784;
+}
+
+.extra-text {
+    display: flex;
+    justify-content: space-between;
+}
+
+.create-account {
+    font-size: 15px;
+    color: #757575;
+    padding-top: 5px;
+    text-decoration-line: underline;
+}
+
+.forgot-password {
+    font-size: 15px;
+    color: #757575;
+    padding-top: 5px;
+    text-align: right;
 }
 
 /* Reponsive Layout */

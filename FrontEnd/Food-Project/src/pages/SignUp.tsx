@@ -2,12 +2,21 @@
 import "../css/SignUp.css"
 import { useState } from "react";
 import type { ComponentProps } from "react";
+// @ts-ignore
+import pasta from "../assets/foodPics/pasta.jpg";
+import { Eye } from 'lucide-react';
+import { EyeClosed } from "lucide-react";
+
+import { Link } from 'react-router-dom';
+
 
 function SignUp() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const[confirmPassword, setConfirmPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfPassword, setShowConfPassword] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -59,67 +68,189 @@ function SignUp() {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
-        <h1>Create an account</h1>
+        <main className="signup-page">
+                <div className="signup-container">
+                    {/* Left side of the login container, will contain an image */}
+                    <div className="recipe-image">
+                        <img src={pasta} alt="Image of a pasta dish"/>
+                    </div>
 
-        {/* Username Field */}
-        <label htmlFor="name">Username</label>
-        <input
-            id="name"
-            type="name"
-            autoComplete="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-        />
+                    {/* Right side of the login container, where the user will actually input info to login */}
+                    <div className="signup-form-container">
+                        <form className="signup-form" onSubmit={handleSubmit}>
 
-        {/* Email Field */}
-        <label htmlFor="email">Email</label>
-        <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-        />
+                            <h1>Welcome!</h1>
 
-        {/* Password Field */}
-        <label htmlFor="password">Password</label>
-        <input
-            id="password"
-            type="password"
-            autoComplete="new-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            minLength={8}
-            required
-        />
+                            <h2>Create an account to begin exploring recipes!</h2>
+
+                            {/* Username Field */}
+                            <div className="input-field">
+                                <label htmlFor="name">Username</label>
+                                <input
+                                    id="name"
+                                    type="name"
+                                    autoComplete="name"
+                                    placeholder="Enter your username"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            {/* Email Field */}
+                            <div className="input-field">
+                                <label htmlFor="email">Email</label>
+                                <input
+                                    id="email"
+                                    type="email"
+                                    autoComplete="email"
+                                    placeholder="Enter your email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            {/* Password Field */}
+                            <div className="input-field">
+                                <label htmlFor="password">Password</label>
+                                <div className="password-input-container">
+                                    <input
+                                        id="password"
+                                        type={
+                                            showPassword
+                                                ? "text"
+                                                : "password"
+                                        }
+                                        placeholder="Enter your password"
+                                        autoComplete="current-password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        minLength={8}
+                                        required
+                                    />
+
+                                    <button 
+                                        type="button" 
+                                        className="password-toggle"
+                                        onClick={() => 
+                                            setShowPassword(
+                                                !showPassword
+                                            )
+                                        }
+                                        aria-label={
+                                            showPassword
+                                                ? "Hide password"
+                                                : "Show password"
+                                        }
+                                    >
+                                        {showPassword ? <EyeClosed size={20}/> : <Eye size={20}/>}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Confirm Password Field */}
+                            <div className="input-field">
+                                <label htmlFor="confirmPassword">Confirm password</label>
+                                <div className="password-input-container">
+                                    <input
+                                        id="confirmPassword"
+                                        type={
+                                            showConfPassword
+                                                ? "text"
+                                                : "password"
+                                        }
+                                        autoComplete="new-password"
+                                        placeholder="Confirm your password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        minLength={8}
+                                        required
+                                    />
+
+                                    <button 
+                                        type="button" 
+                                        className="password-toggle"
+                                        onClick={() => 
+                                            setShowConfPassword(
+                                                !showConfPassword
+                                            )
+                                        }
+                                        aria-label={
+                                            showConfPassword
+                                                ? "Hide password"
+                                                : "Show password"
+                                        }
+                                    >
+                                        {showConfPassword ? <EyeClosed size={20}/> : <Eye size={20}/>}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {error && <p role="alert">{error}</p>}
+
+                            {/* If login request is processing, "Logging in" will show on the button, otherwise "Log in" will show */}
+                            <button type="submit" disabled={loading} className="login-button">
+                                {loading ? "Signing up..." : "Sign Up"}
+                            </button>
+
+                            <div className="extra-text">
+                                <div className="create-account">
+                                    <Link to="/login">Already have an account?</Link>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+        </main>
+
+        // <form onSubmit={handleSubmit}>
+        // <h1>Create an account</h1>
+
+        // <label htmlFor="email">Email</label>
+        // <input
+        //     id="email"
+        //     type="email"
+        //     autoComplete="email"
+        //     value={email}
+        //     onChange={(e) => setEmail(e.target.value)}
+        //     required
+        // />
+
+        // <label htmlFor="password">Password</label>
+        // <input
+        //     id="password"
+        //     type="password"
+        //     autoComplete="new-password"
+        //     value={password}
+        //     onChange={(e) => setPassword(e.target.value)}
+        //     minLength={8}
+        //     required
+        // />
         
-        {/* Confirm Password Field */}
-        <label htmlFor="confirmPassword">
-            Confirm password
-        </label>
-        <input
-            id="confirmPassword"
-            type="password"
-            autoComplete="new-password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            minLength={8}
-            required
-        />
+        // <label htmlFor="confirmPassword">
+        //     Confirm password
+        // </label>
+        // <input
+        //     id="confirmPassword"
+        //     type="password"
+        //     autoComplete="new-password"
+        //     value={confirmPassword}
+        //     onChange={(e) => setConfirmPassword(e.target.value)}
+        //     minLength={8}
+        //     required
+        // />
 
-        {error && <p role="alert">{error}</p>}
+        // {error && <p role="alert">{error}</p>}
 
-        <button type="submit" disabled={loading}>
-            {loading ? "Creating account..." : "Sign up"}
-        </button>
+        // <button type="submit" disabled={loading}>
+        //     {loading ? "Creating account..." : "Sign up"}
+        // </button>
 
-        <p>
-            Already have an account? <a href="/login">Log in</a>
-        </p>
-        </form>
+        // <p>
+        //     Already have an account? <a href="/login">Log in</a>
+        // </p>
+        // </form>
     );
 }
 

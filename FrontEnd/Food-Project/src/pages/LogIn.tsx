@@ -4,10 +4,16 @@ import { useState } from "react";
 import type { SubmitEvent } from "react";
 // @ts-ignore
 import pasta from "../assets/foodPics/pasta.jpg";
+import { Eye } from 'lucide-react';
+import { EyeClosed } from "lucide-react";
+
+import { Link } from 'react-router-dom';
+
 
 function LogIn() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -54,7 +60,9 @@ function LogIn() {
                     <div className="login-form-container">
                         <form className="login-form" onSubmit={handleSubmit}>
 
-                            <h1>Login</h1>
+                            <h1>Welcome Back!</h1>
+
+                            <h2>Sign in to access your recipes and continue cooking!</h2>
 
                             {/* Email Field */}
                             <div className="input-field">
@@ -62,7 +70,8 @@ function LogIn() {
                                 <input
                                     id="email"
                                     type="email"
-                                    autoComplete="username"
+                                    autoComplete="email"
+                                    placeholder="Enter your email or username"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
@@ -75,12 +84,35 @@ function LogIn() {
                                 <div className="password-input-container">
                                     <input
                                         id="password"
-                                        type="password"
+                                        type={
+                                            showPassword
+                                                ? "text"
+                                                : "password"
+                                        }
+                                        placeholder="Enter your password"
                                         autoComplete="current-password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                     />
+
+                                    <button 
+                                        type="button" 
+                                        className="password-toggle"
+                                        onClick={() => 
+                                            setShowPassword(
+                                                !showPassword
+                                            )
+                                        }
+                                        aria-label={
+                                            showPassword
+                                                ? "Hide password"
+                                                : "Show password"
+                                        }
+                                    >
+                                        {showPassword ? <EyeClosed size={20}/> : <Eye size={20}/>}
+
+                                    </button>
                                 </div>
                             </div>
 
@@ -90,6 +122,16 @@ function LogIn() {
                             <button type="submit" disabled={loading} className="login-button">
                                 {loading ? "Logging in..." : "Log in"}
                             </button>
+
+                            <div className="extra-text">
+                                <div className="create-account">
+                                    <Link to="/signup">Don't have an account?</Link>
+                                </div>
+
+                                <div className="forgot-password">
+                                    <p>Forgot Password?</p>
+                                </div>
+                            </div>
                         </form>
                     </div>
                 </div>
