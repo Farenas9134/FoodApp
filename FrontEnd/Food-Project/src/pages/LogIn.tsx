@@ -129,7 +129,7 @@ function LogIn() {
                                 </div>
 
                                 <div className="forgot-password">
-                                    <p>Forgot Password?</p>
+                                    <Link to="/forgot-password">Forgot Password?</Link>
                                 </div>
                             </div>
                         </form>

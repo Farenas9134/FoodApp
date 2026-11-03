@@ -1,7 +1,6 @@
 // @ts-ignore
 import "../css/SignUp.css"
 import { useState } from "react";
-import type { ComponentProps } from "react";
 // @ts-ignore
 import pasta from "../assets/foodPics/pasta.jpg";
 import { Eye } from 'lucide-react';
