@@ -55,11 +55,11 @@ def login_post():
             "error":"Incorrect password, please try again"
         }), 400
 
+    # Clear old session data
+    session.clear()
+    
     # remember default true for testing
     login_user(existing_user, remember=True)
-
-    # Starting a new session 
-    session.clear()
     session["user_id"] = existing_user.get_id()
     
     return jsonify({

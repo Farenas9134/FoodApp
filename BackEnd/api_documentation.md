@@ -18,6 +18,8 @@ Flask + Flask-Login + SQLAlchemy (SQLite). All request/response bodies are JSON 
 
 ## Conventions
 
+**Calling The Server.** All requests must have the following prefix => **'/api'**
+
 **Authentication.** Session-cookie based (Flask-Login). `POST /login` sets the cookie. The frontend must send cookies on every request. Routes marked 🔒 require a logged-in user.
 
 **Pagination.** List endpoints accept `?page=1&per_page=10` and return:
@@ -129,7 +131,7 @@ Flask + Flask-Login + SQLAlchemy (SQLite). All request/response bodies are JSON 
   "image_url": "https://example.com/img.jpg",
   "instructions": ["Season chicken", "Sear 5 min per side", "eat"],
   "nutrients": [],
-  "tags": {},
+  "tags": [],
   "recipe_ingredients": ["2 lbs chicken breast", "3 cloves garlic, minced", "2 tbsp butter"]
 }
 ```
