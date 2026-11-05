@@ -143,8 +143,8 @@
     font-size: 10px;
 }
 
-/* Login Button */
-.login-button {
+/* Signup Button */
+.signup-button {
     padding: 8px 13px;
     border: none;
     border-radius: 5px;
@@ -157,7 +157,7 @@
     width: 100%;
 }
 
-.login-button {
+.signup-button {
     background-color: #81C784;
 }
 

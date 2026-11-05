@@ -1,7 +1,6 @@
 // @ts-ignore
 import "../css/ForgotPassword.css";
 import { useState } from "react";
-import type { SubmitEvent } from "react";
 
 function ForgotPassword() {
     const [email, setEmail] = useState("");
@@ -45,31 +44,38 @@ function ForgotPassword() {
     }
 
     return (
-        <div className="forgot-password-container">
-            <h1>Forgot Password?</h1>
+        <main className="forgot-password-page">
+            <div className="forgot-password-container">
+                <form className="forgot-password-form" onSubmit={handleSubmit}>
+                <h1>Forgot Password?</h1>
 
-            <p>
-                Enter the email associated with your account.
-                We'll send you a link to reset your password.
-            </p>
+                <h2>
+                    Enter the email associated with your account.
+                    We'll send you a link to reset your password.
+                </h2>
 
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
+                    <div className="email-field">
+                        <label htmlFor="email">Email</label>
+                        <input
+                            id="email"
+                            type="email"
+                            placeholder="Enter your email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                {error && <p role="alert">{error}</p>}
-                {message && <p role="status">{message}</p>}
+                    {error && <p role="alert">{error}</p>}
+                    {message && <p role="status">{message}</p>}
 
-                <button type="submit" disabled={loading}>
-                    {loading ? "Sending..." : "Reset Password"}
-                </button>
-            </form>
-        </div>
+                    {/* If forgot password request is processing, "Sending..." is displayed, otherwise "Send Password Reset Link" is displayed */}
+                    <button type="submit" disabled={loading} className="forgot-password-button">
+                        {loading ? "Sending..." : "Send Password Reset Link"}
+                    </button>
+                </form>
+            </div>
+        </main>
     );
 }
 
