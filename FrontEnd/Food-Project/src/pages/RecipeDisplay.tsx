@@ -8,7 +8,8 @@ import placeholderFood from "../assets/foodPics/placeholder-food.jpg"
 
 import { BiArrowBack, BiDish, BiDetail, BiLinkExternal, BiTagAlt } from "react-icons/bi";
 import { FaStar, FaStarHalfAlt } from "react-icons/fa";
-import { CiClock2 } from "react-icons/ci";
+import { CiClock2, CiViewList } from "react-icons/ci";
+import { PiChefHatThin } from "react-icons/pi";
 import { Link } from "react-router-dom";
 
 const recipKeepApi = axios.create({
@@ -209,6 +210,61 @@ function RecipeDisplay() {
                         View Original Source ({recipe.source_platform || "Website"})
                     </a>
                     )}
+                </div>
+            </div>
+
+            {/* Recipe Ingredients & Instructions */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                {/* Ingredients */}
+                <div className="bg-[#FFFDF7] border border-[#EBE5D8] rounded-2xl shadow-sm p-6">
+                    <div className="flex justify-between items-center mb-2 font-semibold">
+                        <div className="flex gap-1.5">
+                            <CiViewList className="w-6 h-6 text-black"/>
+                            <h1 className="text-xl font-bold">Ingredients</h1> 
+                        </div>
+                        <div className="text-xs font-normal bg-[#F1F2E9] px-2 py-0.5 rounded-full">
+                            {ingredients.length} items
+                            </div>
+                    </div>
+                    <ul className="flex flex-col divide-y divide-[#EBE5D8]">
+                        {
+                            ingredients.map((ingredient, id) => 
+                                    <li className="flex justify-between py-3" key={id}>
+                                        <div className="flex flex-col text-sm font-semibold text-[#183C04] gap-1.5">
+                                            <p>{ingredient.name}</p>
+                                            <p className="text-xs text-[#183C04]/60 italic">{ingredient.notes}</p>
+                                        </div>
+                                        <div className="text-xs font-bold text-[#C1622D] bg-[#FFF3EB] px-2 py-0.5 rounded h-fit">
+                                        {ingredient.amount} {ingredient.unit}
+                                        </div>
+                                    </li>
+                            )
+                        }
+                    </ul>
+                </div>
+
+                {/* Instructions */}
+                <div className="bg-[#FFFDF7] border border-[#EBE5D8] rounded-xl shadow-sm col-span-2 p-6">
+                    <div className="flex justify-center items-center mb-1.5 gap-1.5 font-bold">
+                        <PiChefHatThin className="w-6 h-6 text-black stroke-1"/>
+                        <h1 className="text-xl font-bold">Recipe Steps</h1>
+                    </div>
+                    <ul className="flex flex-col">
+                        {
+                            (recipe.instructions) && recipe.instructions.length >= 1 ? (
+                                recipe.instructions.map((step, id) =>
+                                        <li className="flex gap-4 items-start py-3" key={id+1}>
+                                            <div className="flex items-center justify-center shrink-0 w-8 h-8 rounded-full bg-[#183C04] text-white font-bold text-sm">
+                                                {id + 1}
+                                            </div>
+                                            <p className="text-base text-[#183C04]/90 pt-1">{step}</p>
+                                        </li>
+                                )
+                            ) : (
+                                <p>No instructions listed</p>
+                            )
+                        }
+                    </ul>
                 </div>
             </div>
         </div>

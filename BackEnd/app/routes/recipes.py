@@ -354,14 +354,20 @@ def update_recipe(recipe_id):
                                    db.session.delete(old_ri)
                          continue
                
-                    # Grab expected python type for field's value in Recipe model
-                    expected_type = Recipe.__table__.columns[field].type.python_type
-
                     # Check if given update value is appropriate
-                    if value is not None and not isinstance(value, expected_type):
-                         return jsonify({
-                              "error":f"Invalid data type for '{field}'", "details":f"Expected {expected_type.__name__}, got {type(value).__name__} instead."
-                         }), 400
+                    if value is not None:
+                         # If the column is a JSON column, allow both dict and list (for tags tbh)
+                         if isinstance(Recipe.__table__.columns[field].type, db.JSON):
+                              if not isinstance(value, (dict, list)):
+                                   return jsonify({
+                                        "error": f"Invalid data type for '{field}'. Expected dict or list, got {type(value).__name__} instead."
+                                   }), 400
+                         else:
+                              expected_type = Recipe.__table__.columns[field].type.python_type
+                              if not isinstance(value, expected_type):
+                                   return jsonify({
+                                        "error": f"Invalid data type for '{field}'. Expected {expected_type.__name__}, got {type(value).__name__} instead."
+                                   }), 400
 
                     # Check for duplicates on prev. unique fields in Recipe class
                     if field in ('title', 'source_url'):

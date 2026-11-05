@@ -18,10 +18,10 @@ function AboutUs(): React.JSX.Element {
         <div className="flex flex-col w-full min-h-screen mx-auto px-[3%] pt-[3%] gap-10 font-display text-[#183C04]">
 
             <section className="text-center">
-                <h1 className="text-[56px] font-bold">About ReciKeep</h1>
+                <h1 className="text-4xl font-bold">About ReciKeep</h1>
             </section>
 
-            <section className="max-w-4xl mx-auto text-[24px] text-center flex flex-col gap-6">
+            <section className="max-w-4xl mx-auto text-lg text-center flex flex-col gap-6">
                 <p>You know the feeling!!!</p>
                 <p> 
                     While scrolling on TikTok or Instagram, you see an easy recipe that'll solidify your status as a home chef. 
@@ -35,13 +35,13 @@ function AboutUs(): React.JSX.Element {
             </section>
 
             <section className="max-w-2xl mx-auto text-center">
-                <h2 className="text-[36px] font-bold mb-3">Who we are</h2>
-                <p className="text-[24px]">
+                <h2 className="text-4xl font-bold mb-3 ">Who we are</h2>
+                <p className="text-lg">
                     We are Francisco and Shalim. Two computer science graduates who wanted to prove we could build a full-stack app that fixes a small everyday annoyance.
                 </p>
             </section>
             <div className="flex flex-col items-center">
-                <img src={getRandomPokemon()} width={400}/>
+                <img src={getRandomPokemon()} width={300}/>
             </div>
         </div>
 

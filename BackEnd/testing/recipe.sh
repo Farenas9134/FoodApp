@@ -26,16 +26,16 @@ curl -X POST http://localhost:5000/api/login \
 #     "image_url": "https://handletheheat.com/wp-content/uploads/2021/10/brown-butter-chocolate-chip-cookie-SQUARE.png",
 #     "recipe_ingredients": [
 #       "2 sticks (227 grams) unsalted butter",
-#       "\u00bd cup (100 grams) granulated sugar",
-#       "1 \u00bc cups (250 grams) lightly packed dark brown sugar",
-#       "1 \u00bd cups (190 grams) all-purpose flour",
+#       "1/2 cup (100 grams) granulated sugar",
+#       "1 1/4 cups (250 grams) lightly packed dark brown sugar",
+#       "1 1/2 cups (190 grams) all-purpose flour",
 #       "1 cup (127 grams) bread flour",
 #       "1 teaspoon baking soda",
-#       "\u00bc teaspoon baking powder",
+#       "1/4 teaspoon baking powder",
 #       "1 teaspoon fine sea salt",
 #       "2 large eggs plus 1 egg yolk, at room temperature",
 #       "2 teaspoons vanilla extract",
-#       "1 \u00bd cups (255 grams) semisweet chocolate chips",
+#       "1 1/2 cups (255 grams) semisweet chocolate chips",
 #       "1 cup (140 grams) semisweet chocolate baking wafers (from Guittard or Valrhona)*",
 #       "flaky sea salt (optional)"
 #     ],
@@ -52,9 +52,6 @@ curl -X POST http://localhost:5000/api/login \
 #     ]
 #   }'
 
-curl -X PUT http://localhost:5000/api/recipes/10 \
-  -H "Content-Type: application/json" \
-  -b cookies.txt \
-  -d '{
-    "source_url": "https://handletheheat.com/brown-butter-chocolate-chip-cookies/"
-  }'
+# curl -X DELETE http://localhost:5000/api/recipes/10 \
+#   -H "Content-Type: application/json" \
+#   -b cookies.txt \
