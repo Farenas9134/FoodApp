@@ -1,7 +1,9 @@
+import ErrorMessage from "../components/UI/ErrorMessage"
+
 function NotFoundPage() {
     return (
         <div>
-            No page for this bummer
+            <ErrorMessage err="Page not found!"/>
         </div>
     )
 }

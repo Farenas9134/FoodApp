@@ -7,6 +7,7 @@ import { SuggestedRecipes, Recipe } from "../types/recipe";
 import useDebounce from "../components/hooks/useDebounce";
 import FoodCard from "../components/UI/FoodCard";
 import SearchBar from "../components/SearchBar";
+import ErrorMessage from "../components/UI/ErrorMessage";
 // @ts-ignore
 import NathanGIF from "../assets/gifs/nathan-hungry.gif"
 import { FaSearch } from "react-icons/fa";
@@ -196,6 +197,13 @@ function Recipes() {
         };
     }, []);
 
+    if (error) {
+        return (
+            <ErrorMessage err={error}/>
+
+        )
+    }
+
     return (
         <div className="relative flex flex-col w-full min-h-screen box-border mx-auto pl-[3%] pr-[3%] pt-[3%] gap-10">
             <p className="flex justify-center font-display text-[#183C04] font-medium text-2xl">Browse over 100+ community submitted recipes!</p>
@@ -217,7 +225,9 @@ function Recipes() {
             </div>
             
             {/* ERROR DISPLAY */}
-            {error && <p className="flex justify-center items-center font-display text-xl text-black bg-[yellow]">{error}</p>}
+            {error && 
+                <ErrorMessage err={'ee'}/>
+                } 
 
             {/* RECIPE CARD DISPLAY */}
             <ul className="flex items-center gap-10 flex-wrap justify-center">
