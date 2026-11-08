@@ -1,6 +1,8 @@
 // @ts-ignore
 import "../css/ForgotPassword.css";
 import { useState } from "react";
+// @ts-ignore
+import sushi from "../assets/foodPics/sushi.jpg";
 
 function ForgotPassword() {
     const [email, setEmail] = useState("");
@@ -46,34 +48,42 @@ function ForgotPassword() {
     return (
         <main className="forgot-password-page">
             <div className="forgot-password-container">
-                <form className="forgot-password-form" onSubmit={handleSubmit}>
-                <h1>Forgot Password?</h1>
+                {/* Image of a recipe, left side */}
+                <div className="recipe-image">
+                    <img src={sushi} alt="Image of sushi"/>
+                </div>
 
-                <h2>
-                    Enter the email associated with your account.
-                    We'll send you a link to reset your password.
-                </h2>
+                {/* Where user inputs email, right side */}
+                <div className="forgot-password-form-container">
+                    <form className="forgot-password-form" onSubmit={handleSubmit}>
+                    <h1>Forgot Password?</h1>
 
-                    <div className="email-field">
-                        <label htmlFor="email">Email</label>
-                        <input
-                            id="email"
-                            type="email"
-                            placeholder="Enter your email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
+                    <h2>
+                        Enter the email associated with your account.
+                        We'll send you a link to reset your password.
+                    </h2>
 
-                    {error && <p role="alert">{error}</p>}
-                    {message && <p role="status">{message}</p>}
+                        <div className="email-field">
+                            <label htmlFor="email">Email</label>
+                            <input
+                                id="email"
+                                type="email"
+                                placeholder="Enter your email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
 
-                    {/* If forgot password request is processing, "Sending..." is displayed, otherwise "Send Password Reset Link" is displayed */}
-                    <button type="submit" disabled={loading} className="forgot-password-button">
-                        {loading ? "Sending..." : "Send Password Reset Link"}
-                    </button>
-                </form>
+                        {error && <p role="alert">{error}</p>}
+                        {message && <p role="status">{message}</p>}
+
+                        {/* If forgot password request is processing, "Sending..." is displayed, otherwise "Send Password Reset Link" is displayed */}
+                        <button type="submit" disabled={loading} className="forgot-password-button">
+                            {loading ? "Sending..." : "Send Password Reset Link"}
+                        </button>
+                    </form>
+                </div>
             </div>
         </main>
     );

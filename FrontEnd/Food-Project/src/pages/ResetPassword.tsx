@@ -2,6 +2,8 @@
 import "../css/ResetPassword.css";
 import { useState } from "react"; 
 import { useNavigate } from "react-router-dom";
+// @ts-ignore
+import dessert from "../assets/foodPics/dessert.jpg"; 
 
 import { Eye } from 'lucide-react';
 import { EyeClosed } from "lucide-react";
@@ -71,10 +73,17 @@ function ResetPassword() {
     return (
         <main className="reset-password-page">
             <div className="reset-password-container">
+                {/* Image of a dessert, left side of container */}
+                <div className="recipe-image">
+                    <img src={dessert} alt="Image of a chocolate dessert"/>
+                </div>
+
                 {/* Where users will input information */}
                 <div className="reset-password-form-container">
                     <form onSubmit={handleSubmit}>
                         <h1>Reset Password</h1>
+
+                        <h2>Enter your new password for your account!</h2>
 
                         {/* Password Field */}
                         <div className="input-field">
