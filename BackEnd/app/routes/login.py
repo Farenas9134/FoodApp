@@ -6,8 +6,21 @@ from ..models import User
 from ..extensions import db
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime, timedelta, timezone
+import re
 
 login_bp = Blueprint('login', __name__, template_folder='templates')
+
+def is_email(email):
+    """
+    Checks if input is an email that is RFC 5322 compliant
+
+    Param: email (str)
+    Returns: boolean
+    """
+    EMAIL_REGEX = re.compile(r"^(?P<local>[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+)@(?P<domain>[A-Za-z0-9.-]+\.[A-Za-z]{2,})$")
+
+    # Will return true if a valid email is inputted, false otherwise
+    return EMAIL_REGEX.match(email) is not None
 
 @login_bp.route('/login', methods=['POST'])
 def login_post():
@@ -28,20 +41,28 @@ def login_post():
             "error": "Request body must be valid JSON"
         }), 400
 
-    email = data.get("email")
+    username = data.get("username")
     password = data.get("password")
     # Check whether or not user wants to be remembered and not have to login again when reopening page
     # remember = bool(request.form.get('remember'))
 
-    # If email or password are missing
-    if not email or not password:
+    # If email/username or password are missing
+    if not username or not password:
         return jsonify({
-            "error": "Missing either email or password"
+            "error": "Missing either username or password"
         }), 400
 
-    # Querying the database using the email inputted
-    stmt = select(User).filter_by(email=email)
-    existing_user = db.session.scalars(stmt).first()
+    # Checking whether a username or email was inputted
+    if is_email(username):
+        email = username
+
+        # Querying the database using the email inputted
+        stmt = select(User).filter_by(email=email)
+        existing_user = db.session.scalars(stmt).first()
+    # If a username was inputted
+    else:
+        stmt = select(User).filter_by(name=username)
+        existing_user = db.session.scalars(stmt).first()
 
     # Checking to see if a user does not exist in the database with that email
     if not existing_user:
@@ -93,23 +114,26 @@ def forgot_password():
     stmt = select(User).filter_by(email=email)
     existing_user = db.session.scalars(stmt).first()
 
-    if not existing_user:
-        return jsonify({
-            "error":"User does not exist"
-        }), 400
+    if existing_user:
 
-    token = secrets.token_urlsafe(32)
-    existing_user.reset_token = token
-    existing_user.reset_token_expires = (datetime.now(timezone.utc) + timedelta(hours=1)).replace(tzinfo=None)
-    db.session.commit()
+        # Generating token that will go in reset password url
+        token = secrets.token_urlsafe(32)
+        existing_user.reset_token = token
+        existing_user.reset_token_expires = (datetime.now(timezone.utc) + timedelta(minutes=30))
+        db.session.commit()
+
+        # For testing purposes, will replace with an email sending service
+        reset_link = f"http://localhost:5173/reset-password?token={token}"
+
+        print(f"Password reset link: {reset_link}")
 
     return jsonify({
-        "message":"Password reset link successfully sent to your email"
-    })
+        "message":"If an account exist with that email, a password reset link has been sent."
+    }), 200
 
 
-@login_bp.route('/reset-password/<token>', methods=['POST'])
-def reset_password(token):
+@login_bp.route('/reset-password', methods=['POST'])
+def reset_password():
     """
     Set a new password using a reset token from the URL.
 
@@ -121,38 +145,47 @@ def reset_password(token):
 
     data = request.get_json()
 
-    new_password = data["password"]
-    email = data["email"]
-
-    if not email:
-        return jsonify({
-            "error":"Missing email"
-        }), 400
+    new_password = data.get("password")
+    token = data.get("token")
 
     if not new_password:
         return jsonify({
-            "error":"New password can't be empty"
+            "error":"New password can't be empty."
+        }), 400
+    elif len(new_password) < 8:
+        return jsonify({
+            "error": "Password must be longer than 8 characters."
         }), 400
 
     user = User.query.filter_by(reset_token=token).first()
 
-    if not user or user.reset_token_expires < datetime.now(timezone.utc).replace(tzinfo=None) or user.reset_token != token:
+    if not user or user.reset_token != token:
         return jsonify({
-            "error":"Invalid token or expired reset token"
+            "error": "Invalid reset token."
+        }), 400
+
+    # print("User token expires ", user.reset_token_expires)
+    # print("The time is ", datetime.now(timezone.utc))
+
+    expires = user.reset_token_expires.replace(tzinfo=timezone.utc)
+
+    if expires < datetime.now(timezone.utc):
+        return jsonify({
+            "error":"Reset token has expired."
         }), 400
 
     hashed_password = generate_password_hash(new_password)
-
     user.password = hashed_password
 
+    # Reset token so it can't be reused
     user.reset_token = None
     user.reset_token_expires = None
 
     db.session.commit()
 
     return jsonify({
-        "message":"Password successfully reset"
-    })    
+        "message":"Your password has been successfully reset."
+    }), 200
 
 @login_bp.route('/logout')
 @login_required

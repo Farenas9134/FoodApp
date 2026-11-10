@@ -2,6 +2,7 @@
 import "../css/LogIn.css";
 import { useState } from "react";
 import type { SubmitEvent } from "react";
+import { useNavigate } from "react-router-dom";
 // @ts-ignore
 import pasta from "../assets/foodPics/pasta.jpg";
 import { Eye } from 'lucide-react';
@@ -11,7 +12,7 @@ import { Link } from 'react-router-dom';
 
 
 function LogIn() {
-    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
@@ -21,6 +22,8 @@ function LogIn() {
         e.preventDefault();
         setError("")
         setLoading(true)
+
+        const navigate = useNavigate();
         
         // Making request to our backend where it will check if the user exists in our database
         try {
@@ -30,7 +33,7 @@ function LogIn() {
                     "Content-Type": "application/json",
                 },
                 credentials: "include",
-                body: JSON.stringify({ email, password}),
+                body: JSON.stringify({ username, password}),
             });
 
             const data = await response.json();
@@ -41,7 +44,7 @@ function LogIn() {
             }
             
             // Will change when we make a profile page or something similar
-            window.location.href = "/home";
+            navigate("/");
         } catch {
             setError("Unable to connect. Please try again.");
         } finally {
@@ -66,14 +69,14 @@ function LogIn() {
 
                             {/* Email Field */}
                             <div className="input-field">
-                                <label htmlFor="email">Email or Username</label>
+                                <label htmlFor="username">Email or Username</label>
                                 <input
-                                    id="email"
-                                    type="email"
-                                    autoComplete="email"
+                                    id="username"
+                                    type="text"
+                                    autoComplete="text"
                                     placeholder="Enter your email or username"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
                                     required
                                 />
                             </div>
