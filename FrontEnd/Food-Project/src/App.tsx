@@ -9,6 +9,7 @@ import RecipeDisplay from "./pages/RecipeDisplay";
 import NotFoundPage from "./pages/NotFoundPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import RecipesSubmit from "./pages/RecipesSubmit";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="*" element={<NotFoundPage />}/>
           <Route path="/forgot-password" element={<ForgotPassword/>} />
           <Route path="/reset-password" element={<ResetPassword/>} />
+          <Route path="/recipes-submit" element={<RecipesSubmit/>}/>
         </Routes>
       </BrowserRouter>
   );

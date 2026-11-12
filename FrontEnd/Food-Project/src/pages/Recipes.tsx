@@ -2,7 +2,7 @@
 import "../css/recipes.css";
 import axios from 'axios';
 import { ReactElement, useEffect, useState, useRef } from "react";
-import { NavigateFunction, useLocation } from "react-router-dom";
+import { NavigateFunction, useLocation, Link } from "react-router-dom";
 import { SuggestedRecipes, Recipe } from "../types/recipe";
 import useDebounce from "../components/hooks/useDebounce";
 import FoodCard from "../components/UI/FoodCard";
@@ -12,6 +12,7 @@ import ErrorMessage from "../components/UI/ErrorMessage";
 import NathanGIF from "../assets/gifs/nathan-hungry.gif"
 import { FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { BiFoodMenu } from "react-icons/bi";
 
 const recipKeepApi = axios.create({
     baseURL: "/api"
@@ -206,7 +207,17 @@ function Recipes() {
 
     return (
         <div className="relative flex flex-col w-full min-h-screen box-border mx-auto pl-[3%] pr-[3%] pt-[3%] gap-10">
-            <p className="flex justify-center font-display text-[#183C04] font-medium text-2xl">Browse over 100+ community submitted recipes!</p>
+            
+            {/* Link to submit a recipe */}
+            <div className="flex flex-col w-fit mx-auto items-center gap-1.5">
+                <p className="flex justify-center font-display text-[#183C04] font-medium text-2xl">Browse over 100+ community submitted recipes!</p>
+                <Link to={'/recipes-submit'} className="flex gap-1 items-center hover:scale-105 hover:cursor-pointer" >
+                    <BiFoodMenu className="h-4.5 w-4.5 text-[#C1622D]"/>
+                    <p className="font-display text-[#C1622D]/80 cursor-pointer font-semibold">
+                    Or, click here to submit a recipe!
+                    </p>
+                </Link>
+            </div>
 
             {/* SEARCHBAR NAV */}
             <div ref={searchContainerRef} className="relative w-[35%] mx-auto">
