@@ -30,7 +30,7 @@ Navigate from the root to FrontEnd and then Food-Project (FoodApp\FrontEnd\Food-
 
 npm run dev
 
-In order to send requests from the frontend to the backend, both commands must be run in separate terminals.
+**In order to send requests from the frontend to the backend, both commands must be run in separate terminals.**
 
 ## Testing
 
