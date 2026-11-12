@@ -1,20 +1,31 @@
 from flask import Flask
 from flask import jsonify
 from .extensions import db, migrate, login_manager
-from flask_admin import Admin
-from flask_admin.contrib.sqla import ModelView
+import os
+from pathlib import Path
+from dotenv import load_dotenv
 
 # What is CORS? https://www.geeksforgeeks.org/python/how-to-install-flask-cors-in-python/
 from flask_cors import CORS
 
+# Explicitly load FoodApp/BackEnd/.env in any working directory
+backend_dir = Path(__file__).resolve().parent.parent
+load_dotenv(dotenv_path=backend_dir / ".env.local", override=True)
+load_dotenv(dotenv_path=backend_dir / ".env", override=False)
+
 def create_app(test_config=None):
     app = Flask(__name__)
     # update methods as neeeded,
-    CORS(app, supports_credentials=True, methods=["GET", "POST"])
+    CORS(app, supports_credentials=True, methods=["GET", "POST", "PUT", "DELETE"])
+
+    # Read Neon connecttion string from .env falling back to local db file
+    db_uri = os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite')
+    if db_uri.startswith('postgres://'):
+        db_uri = db_uri.replace('postgres://', 'postgresql://', 1)
 
     # Defualt Configuration
-    app.config['SECRET_KEY'] = 'super-secret-key'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super-secret-key')
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
 
     # == = = = = = = = = = = = = = =
@@ -26,9 +37,6 @@ def create_app(test_config=None):
     # Initialize extensions with app
     db.init_app(app)
     migrate.init_app(app, db, render_as_batch=True)
-
-    # Initialize Flask-Admin
-    admin = Admin(app, name="MyApp")
 
     login_manager.init_app(app)
 

@@ -1,0 +1,10 @@
+.neon
+node_modules/
+.env
+.env.local
+
+# DB Files
+*.db
+*.sqlite
+*.sqlite3
+instance/

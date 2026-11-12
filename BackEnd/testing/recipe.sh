@@ -1,5 +1,13 @@
 #!/bin/bash
 
+curl -X POST http://localhost:5000/api/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "admin",
+    "email":"admin@dev.com",
+    "password": "admin"
+  }'
+
 curl -X POST http://localhost:5000/api/login \
   -H "Content-Type: application/json" \
   -c cookies.txt \
