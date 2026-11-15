@@ -248,7 +248,7 @@ class Recipe(db.Model):
     # FOR SOME OF THESE IM HONESTLY NOT SURE IF nullable=True OR nullable=False MAKES THE MOST SENSE
     
     recipe_id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
+    title = db.Column(db.String(100), nullable=False, index=True)
     source_url = db.Column(db.String(1000), nullable=False)
     source_platform = db.Column(db.String(100), nullable=False)
     instructions = db.Column(db.JSON, nullable=False)

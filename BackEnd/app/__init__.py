@@ -26,7 +26,12 @@ def create_app(test_config=None):
     # Defualt Configuration
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super-secret-key')
     app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        "pool_size": 5,
+        "max_overflow": 10,
+        "pool_recycle": 300,
+    }
 
     # == = = = = = = = = = = = = = =
     # Override defaults if for testing purposes

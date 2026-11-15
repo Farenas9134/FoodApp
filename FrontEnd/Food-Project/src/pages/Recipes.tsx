@@ -40,7 +40,7 @@ function displayRecipes(recipes: Recipe[]): Array<ReactElement> {
 function displaySuggestedRecipes(recipes: SuggestedRecipes[], navigate:NavigateFunction): React.ReactNode {
     
     const handleViewRecipe = (recipe_id: number) => {
-        navigate(`/recipe/${recipe_id}`, {state: recipes} );
+        navigate(`/recipe/${recipe_id}`);
     };
 
     const suggestedRecipeResults = 
