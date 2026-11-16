@@ -37,20 +37,25 @@ const recipeTags: TagOption[] = [
     {value:'halaal', label: 'Halaal'},
 ]
 
+interface FormText {
+    instructions: string,
+    recipe_ingredients: string
+}
+
+const emptyFormText: FormText = {
+  instructions: '',
+  recipe_ingredients: '',
+};
+
 function RecipesSubmit() {
     const [form, setForm] = useState<RecipeFormValues>(emptyRecipe);
-    const [instructionsText, setInstructionsText] = useState<string>('');
-    const [instructions, setInstructions] = useState<Array<string>>([]);
-    const [ingredientText, setIngredientText] = useState<string>('');
-    const [ingredients, setIngredients] = useState<Array<string>>([]);
+    const [formText, setFormText] = useState<FormText>(emptyFormText);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        if (name === 'instructions') {
-            setInstructionsText(value)
-        }
-        else if (name === 'recipe_ingredients') {
-            setIngredientText(value)
+
+        if (name === 'recipe_ingredients' || name === 'instructions') {
+            setFormText(prev => ({ ...prev, [name]: value}))
         }
         // Prev: latest version of form
         // ...prev -> copies every existing field/info into a new RecipeFormValues object
@@ -60,21 +65,12 @@ function RecipesSubmit() {
         }
     }
 
-    const handleAddItem = (e: React.KeyboardEvent<HTMLTextAreaElement>, fieldname: string) => {
+    const handleAddItem = (e: React.KeyboardEvent<HTMLTextAreaElement>, fieldname: 'instructions'|'recipe_ingredients') => {
         if (e.key === 'Enter') {
             e.preventDefault()
-            if (fieldname === 'instructions' && instructionsText.trim()) {
-                const updatedInstructions = [...instructions, instructionsText];
-                setInstructions(updatedInstructions);
-                setInstructionsText('');
-                setForm(prev => ({ ...prev, instructions: updatedInstructions }));
-            }
-            if (fieldname === 'recipe_ingredients' && ingredientText.trim()) {
-                const updatedIngredients = [...ingredients, ingredientText];
-                setIngredients(updatedIngredients);
-                setIngredientText('');
-                setForm(prev => ({ ...prev, recipe_ingredients: updatedIngredients }));
-            }
+            if (!formText[fieldname].trim()){return}
+            setForm(prev => ({ ...prev, [fieldname]: [...prev[fieldname], formText[fieldname]] }))
+            setFormText(prev => ({ ...prev, [fieldname]: ''}))
         }
     }
 
@@ -85,13 +81,11 @@ function RecipesSubmit() {
 
     useEffect(() => {
         console.log('form:', form)
-        console.log('instructions', instructions)
-        console.log('ingredients', ingredients)
-    }, [form, instructions, ingredients])
+    }, [form])
 
     return (
         <div className="relative flex flex-col w-full min-h-screen box-border mx-auto pl-[3%] pr-[3%] pt-[3%] gap-10">
-            <form>
+            <form onSubmit={() => alert('yay you submitted it!')}>
             <fieldset className="relative grid grid-cols-1 md:grid-cols-2 font-display text-med gap-5 border w-[50%] mx-auto p-6">
                 <legend>Recipe Submission</legend>
                 <div className="flex flex-col">
@@ -128,7 +122,8 @@ function RecipesSubmit() {
                         <option value={"Breakfast"}>Breakfast</option>
                         <option value={"Lunch"}>Lunch</option>
                         <option value={"Dinner"}>Dinner</option>
-                        <option value={"Dessert"}>Dessert</option>                    </select>
+                        <option value={"Dessert"}>Dessert</option>
+                    </select>
                 </div>
                 <div className="flex flex-col">
                     <label>Servings:</label>
@@ -161,10 +156,10 @@ function RecipesSubmit() {
                 <div className="flex flex-col col-span-full">
                     <label>Recipe Steps:</label>
                     {
-                        instructions.length > 0 ? (
+                        form.instructions.length > 0 ? (
                             <ul>
                             {
-                            instructions.map((step, id) => 
+                            form.instructions.map((step, id) => 
                                 <li key={id} className="">
                                     {id + 1}: {step}
                                 </li>
@@ -179,18 +174,18 @@ function RecipesSubmit() {
                         className=" bg-white resize-none p-2 rounded" 
                         placeholder="Add an instruction and press Enter..." 
                         onKeyDown={(e) => handleAddItem(e, 'instructions')}
-                        value={instructionsText} 
+                        value={formText.instructions} 
                         onChange={handleChange}/>
-                    <input type="button" name="clear-inst" value="Clear" onClick={() => setInstructions([])}></input>
+                    <input type="button" value="Clear" onClick={() => setForm(prev => ({ ...prev, instructions: [] }))}/>
                 </div>
 
                 <div className="flex flex-col col-span-full">
                     <label>Recipe Ingredients:</label>
                     {
-                        ingredients.length > 0 ? (
+                        form.recipe_ingredients.length > 0 ? (
                             <ul>
                             {
-                            ingredients.map((ing, id) => 
+                            form.recipe_ingredients.map((ing, id) => 
                                 <li key={id} className="">
                                     {id + 1}: {ing}
                                 </li>
@@ -205,17 +200,18 @@ function RecipesSubmit() {
                         className=" bg-white resize-none p-2 rounded" 
                         placeholder="Add an ingredient and press Enter..." 
                         onKeyDown={(e) => handleAddItem(e, 'recipe_ingredients')}
-                        value={ingredientText}
+                        value={formText.recipe_ingredients}
                         onChange={handleChange}/>
-                    <input type="button" name="clear-inst" value="Clear" onClick={() => setIngredients([])}></input>
+                    <input type="button" value="Clear" onClick={() => setForm(prev => ({ ...prev, recipe_ingredients:[] })) }/>
                 </div>
                 {/* submit button */}
-                <input type='submit' name="submit" value="Submit" className="col-span-full flex mx-auto bg-white w-fit rounded-full px-2 py-0.5 text-med shadow hover:bg-green-500 cursor-pointer"/>
+                <input 
+                    type='submit' 
+                    name="submit" 
+                    value="Submit" 
+                    className="col-span-full flex mx-auto bg-white w-fit rounded-full px-2 py-0.5 text-med shadow hover:bg-green-500 cursor-pointer"/>
             </fieldset>
             </form>
-
-            <div className="relative w-64">
-</div>
         </div>
     )
 }

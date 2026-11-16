@@ -57,6 +57,7 @@ function RecipeDisplay() {
 
             try {
                 const response = await recipKeepApi.get(`/recipes/${validId}`)
+                console.log(response.data)
                 setRecipe(response.data.recipe)
                 setIngredients(response.data.ingredients)
             } catch(err) {
@@ -230,6 +231,7 @@ function RecipeDisplay() {
                         {
                             ingredients.map((ingredient, id) => 
                                     <li className="flex justify-between py-3" key={id}>
+                                        <>{console.log(ingredients)}</>
                                         <div className="flex flex-col text-sm font-semibold text-[#183C04] gap-1.5">
                                             <p>{ingredient.name}</p>
                                             <p className="text-xs text-[#183C04]/60 italic">{ingredient.notes}</p>

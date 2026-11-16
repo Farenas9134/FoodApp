@@ -20,12 +20,12 @@ curl -X POST http://localhost:5000/api/recipes \
   -H "Content-Type: application/json" \
   -b cookies.txt \
   -d '{
-    "title": "Browned Butter Chocolate Chip Cookies2",
-    "created_by": "Tester",
+    "title": "Browned Butter Chocolate Chip Cookies",
+    "created_by": "Tessa Arias",
     "tags": ["dessert", "cookies", "chocolate"],
     "nutrients": [],
     "rating": 5,
-    "source_url": "test.com",
+    "source_url": "https://handletheheat.com/brown-butter-chocolate-chip-cookies/#recipe",
     "source_platform": "Web",
     "category": "Dessert",
     "total_time": 228,
