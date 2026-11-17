@@ -42,7 +42,8 @@ def upgrade():
         batch_op.alter_column('tags',
                existing_type=sa.VARCHAR(length=100),
                type_=sa.JSON(),
-               existing_nullable=True)
+               existing_nullable=True,
+               postgresql_using='tags::json')
 
     # ### end Alembic commands ###
 

@@ -34,7 +34,7 @@ class User(UserMixin, db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(1000), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
-    password = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(256), nullable=False)
 
     # Relevant for password reset
     reset_token = db.Column(db.String(100), nullable=True)
@@ -129,7 +129,7 @@ class Ingredient(db.Model):
     created_by = db.Column(db.Integer, db.ForeignKey('user.user_id'), nullable=True)
 
     # Soft deletion of ingredients but still want it to be referenced by recipes
-    is_deleted = db.Column(db.Boolean, default=False, nullable=False, server_default=sa.text('0'))
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False, server_default=sa.false())
 
     __table_args__ = (
         # Prevents two public/live 'chicken' rows
@@ -248,7 +248,7 @@ class Recipe(db.Model):
     # FOR SOME OF THESE IM HONESTLY NOT SURE IF nullable=True OR nullable=False MAKES THE MOST SENSE
     
     recipe_id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
+    title = db.Column(db.String(100), nullable=False, index=True)
     source_url = db.Column(db.String(1000), nullable=False)
     source_platform = db.Column(db.String(100), nullable=False)
     instructions = db.Column(db.JSON, nullable=False)

@@ -2,6 +2,7 @@ import logging
 from logging.config import fileConfig
 
 from flask import current_app
+from sqlalchemy import text
 
 from alembic import context
 
@@ -103,8 +104,16 @@ def run_migrations_online():
             **conf_args
         )
 
-        with context.begin_transaction():
-            context.run_migrations()
+        # Temporarily disable SQLite foreign keys so batch table recreation can drop/swap tables
+        if connection.dialect.name == "sqlite":
+            connection.execute(text("PRAGMA foreign_keys=OFF"))
+
+        try:
+            with context.begin_transaction():
+                context.run_migrations()
+        finally:
+            if connection.dialect.name == "sqlite":
+                connection.execute(text("PRAGMA foreign_keys=ON"))
 
 
 if context.is_offline_mode():
