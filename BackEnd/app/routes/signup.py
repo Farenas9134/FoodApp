@@ -45,7 +45,7 @@ def signup_post():
     #     }), 400
 
     # create new user. Hash password so plaintext version never stored
-    new_user = User(email=email, name=name)
+    new_user = User(email=email.strip().lower(), name=name)
     new_user.set_password(password)
 
     # add user to db

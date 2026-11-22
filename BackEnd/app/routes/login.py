@@ -2,8 +2,9 @@ import secrets
 import re
 import hashlib
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
-from flask_login import login_user, login_required, logout_user
+from flask import Blueprint, request, jsonify, session, current_app
+from flask_wtf.csrf import generate_csrf
+from flask_login import login_user, login_required, logout_user, current_user
 from sqlalchemy import select
 from ..models import User
 from ..extensions import db
@@ -13,12 +14,14 @@ from datetime import datetime, timedelta, timezone
 
 login_bp = Blueprint('login', __name__, template_folder='templates')
 
-EMAIL_REGEX = re.compile(r"^(?P<local>[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+)@(?P<domain>[A-Za-z0-9.-]+\.[A-Za-z]{2,})$")
+EMAIL_REGEX = re.compile(
+    r"^(?P<local>[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+)@(?P<domain>[A-Za-z0-9.-]+\.[A-Za-z]{2,})$"
+    )
 MIN_PASSWORD_LENGTH = 8
 MAX_PASSWORD_LENGTH = 128
 RESET_TOKEN_MINUTES = 30
 
-# Don't want to give away when an account exists or not
+# Don't want to give away when a user exists or not so this is checked when a user doesn't exist so response time doesn't give that away
 DUMMY_HASH = generate_password_hash("fake-password")
 
 def is_email(email):
@@ -33,6 +36,11 @@ def is_email(email):
     return EMAIL_REGEX.match(email) is not None
 
 def json_body():
+    """
+    Returns a JSON body if the data is a JSON instance, otherwise None so no errors
+    get raised
+    """
+
     data = request.get_json(silent=True)
 
     if isinstance(data, dict):
@@ -48,6 +56,48 @@ def hash_token(token):
     Returns: hashed token (str)
     """
     return hashlib.sha256(token.encode()).hexdigest()
+
+def user_payload(user):
+    """
+    Returns details of a user
+    """
+
+    return {"id": user.get_id(), "name": user.name, "email": user.email}
+
+@login_bp.route('/csrf', methods=['GET'])
+def give_csrf_token():
+    """
+    Generates a CSRF (Cross-Site Request Forgery) token tied to current session
+    cookie
+
+    Ref: https://brightsec.com/blog/csrf-token/#what-is-csrf-token
+    CSRF tokens are server generated values embedded in web forms or requests that are used to verify authenticity of a user's 
+    request. When a user submits a form, the server compares the CSRF token with the stored token to ensure they are the same.
+    These tokens prevent attackers from performing actions on behalf of logged in users. The tokens should always be transmitted through
+    POST, PUT, or DELETE methods and never GET methods as this makes the token accessible via the URL.
+
+    Auth: public
+    Params: None
+    Returns: 200: {csrf_token}, issues a session CSRF token
+    """
+    return jsonify({
+        "csrf_token": generate_csrf()
+    }), 200
+
+@login_bp.route('/me', methods=["GET"])
+@login_required
+def me():
+    """
+    Returns the current logged-in user. Frontend will call this to ensure the session cookie is still valid.
+
+    Auth: login required
+    Params: None
+    Returns: 200: {user}, logged-in user
+    """
+
+    return jsonify({
+        "user": user_payload(current_user)
+    }), 200
 
 @login_bp.route('/login', methods=['POST'])
 def login_post():
@@ -71,7 +121,7 @@ def login_post():
     username = data.get("username")
     password = data.get("password")
     # Check whether or not user wants to be remembered and not have to login again when reopening page
-    # remember = bool(request.form.get('remember'))
+    remember = data.get("remember") is True
 
     # If email/username or password are missing
     if not isinstance(username,str) or not isinstance(password, str) or not username.strip() or not password:
@@ -84,7 +134,7 @@ def login_post():
 
     # Checking whether a username or email was inputted
     if is_email(username):
-        email = username
+        email = username.lower()
 
         # Querying the database using the email inputted
         stmt = select(User).filter_by(email=email)
@@ -92,29 +142,32 @@ def login_post():
     else:
         stmt = select(User).filter_by(name=username)
 
-    existing_user = db.session.scalars(stmt).first()
+    user = db.session.scalars(stmt).first()
 
-    # Checking password whether or not user exists as runtime difference can leak whether a user exists
-    if existing_user:
-        password_ok = check_password_hash(existing_user.password)
+    # Checking password whether or not user actually exists as runtime difference can leak whether a user exists
+    if user:
+        password_ok = check_password_hash(user.password)
     else:
         password_ok = check_password_hash(DUMMY_HASH, password[:MAX_PASSWORD_LENGTH])
 
-    # Checking to see if a user does not exist in the database with that email
-    if not existing_user or not password_ok or not existing_user.is_active:
+    # Returning a generic message so attackers can't tell which accounts exist
+    if not user or not password_ok or not user.is_active:
         return jsonify({
             "error": "Invalid username or password."
         }), 401
 
-    # Clear old session data
+    # Clear old session data including previous CSRF token
     session.clear()
     
     # remember default true for testing
-    login_user(existing_user, remember=True)
-    session["user_id"] = existing_user.get_id()
+    login_user(user, remember=True)
+    session["user_id"] = user.get_id()
+    session.permanent = remember
     
     return jsonify({
-        "message":"Successful login"
+        "message":"Successful login",
+        "user": user_payload(user),
+        "csrf_token": generate_csrf(),
     }), 200
 
 @login_bp.route('/forgot-password', methods=['POST'])
@@ -140,20 +193,22 @@ def forgot_password():
         }), 400
 
     stmt = select(User).filter_by(email=email.strip().lower())
-    existing_user = db.session.scalars(stmt).first()
+    user = db.session.scalars(stmt).first()
 
-    if existing_user:
+    if user:
         # Generating token that will go in reset password url
         token = secrets.token_urlsafe(32)
         # Encode token in case of leaks
-        existing_user.reset_token = hash_token(token)
-        existing_user.reset_token_expires = (datetime.now(timezone.utc) + timedelta(minutes=RESET_TOKEN_MINUTES))
+        user.reset_token = hash_token(token)
+        user.reset_token_expires = (datetime.now(timezone.utc) + timedelta(minutes=RESET_TOKEN_MINUTES))
         db.session.commit()
 
-        # For testing purposes, will replace with an email sending service
-        reset_link = f"http://localhost:5173/reset-password?token={token}"
+        frontend = current_app.config.get("FRONTEND_ORIGIN", "https://localhost:5173")
+        print(f"Password reset link: {frontend}/reset-password?token={token}")
 
-        print(f"Password reset link: {reset_link}")
+        # For testing purposes, will replace with an email sending service
+        # reset_link = f"http://localhost:5173/reset-password?token={token}"
+        # print(f"Password reset link: {reset_link}")
 
     return jsonify({
         "message":"If an account exist with that email, a password reset link has been sent."
@@ -204,11 +259,9 @@ def reset_password():
             "error": "Invalid reset token."
         }), 400
 
-    # print("User token expires ", user.reset_token_expires)
-    # print("The time is ", datetime.now(timezone.utc))
-
     expires = user.reset_token_expires
 
+    # Handling naive datetimes
     if expires.tzinfo is None:
         expires = expires.replace(tzinfo=timezone.utc)
 
@@ -242,5 +295,6 @@ def logout():
     logout_user()
     session.clear()
     return jsonify({
-        "message":"Successful logout"
+        "message":"Successful logout",
+        "csrf_token": generate_csrf()
     }), 200

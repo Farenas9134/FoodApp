@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
+from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import MetaData, event
 from sqlalchemy.engine import Engine
 from sqlite3 import Connection as SQLite3Connection
@@ -23,6 +24,7 @@ metadata = MetaData(naming_convention=convention)
 db = SQLAlchemy(metadata=metadata)
 migrate = Migrate()
 login_manager = LoginManager()
+csrf = CSRFProtect()
 
 # Pthon's built-in SQLite driver ignores foreign key rules like "ON DELETE CASCADE"
 # This listener ensures we enforce the rules (had issues with ingredientRecipes not being deleted)
