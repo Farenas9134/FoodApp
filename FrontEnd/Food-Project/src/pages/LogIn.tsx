@@ -2,6 +2,7 @@
 import "../css/LogIn.css";
 import { useState } from "react";
 import type { SubmitEvent } from "react";
+import { useAuth } from "./Auth";
 import { useNavigate } from "react-router-dom";
 // @ts-ignore
 import pasta from "../assets/foodPics/pasta.jpg";
@@ -12,9 +13,11 @@ import { Link } from 'react-router-dom';
 
 
 function LogIn() {
+    const { login } = useAuth();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [remember, setRemember] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -46,7 +49,7 @@ function LogIn() {
             // Will change when we make a profile page or something similar
             navigate("/");
         } catch {
-            setError("Unable to connect. Please try again.");
+            setError("Login failed.");
         } finally {
             setLoading(false);
         }
@@ -117,6 +120,14 @@ function LogIn() {
 
                                     </button>
                                 </div>
+                            </div>
+                            
+                            {/* Remember Me Box */}
+                            <div className="remember-me">
+                                <label>
+                                    <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+                                    Remember me
+                                </label>
                             </div>
 
                             {error && <p role="alert">{error}</p>}

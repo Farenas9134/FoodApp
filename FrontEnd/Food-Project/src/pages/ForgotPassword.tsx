@@ -1,11 +1,13 @@
 // @ts-ignore
 import "../css/ForgotPassword.css";
 import { useState } from "react";
+import { api } from "../components/api"
 // @ts-ignore
 import sushi from "../assets/foodPics/sushi.jpg";
 
 function ForgotPassword() {
     const [email, setEmail] = useState("");
+    const [sent, setSent] = useState(false);
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
@@ -19,25 +21,22 @@ function ForgotPassword() {
 
         // Querying database to determine if user exists and then sending password reset link to user email from the backend
         try {
-            const response = await fetch("api/forgot-password", {
+            await api("/forgot-password", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify({
                     email
                 }),
 
             });
 
-            const data = await response.json();
+            setSent(true);
 
-            if (!response.ok) {
-                setError(data.message || "Something went wrong.");
-                return;
-            }
+            // if (!response.ok) {
+            //     setError(data.message || "Something went wrong.");
+            //     return;
+            // }
 
-            setMessage(data.message);
+            // setMessage(data.message);
         } catch {
             setError("Unable to connect. Please try again.")
         } finally {

@@ -10,6 +10,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import RecipesSubmit from "./pages/RecipesSubmit";
+import RequireAuth from "./pages/RequireAuth";
 
 function App() {
   return (
@@ -18,7 +19,9 @@ function App() {
         <NavBar/>
 
         <Routes>
-          <Route path="/" element={<Home/>} />
+          <Route element={<RequireAuth />}>
+            <Route path="/" element={<Home/>} />
+          </Route>
           <Route path="/signup" element={<SignUp/>} />
           <Route path="/login" element={<LogIn/>} />
           <Route path="/recipes" element={<Recipes/>} />

@@ -2,6 +2,7 @@
 import "../css/ResetPassword.css";
 import { useState } from "react"; 
 import { useNavigate } from "react-router-dom";
+import { api } from "../components/api";
 // @ts-ignore
 import dessert from "../assets/foodPics/dessert.jpg"; 
 
